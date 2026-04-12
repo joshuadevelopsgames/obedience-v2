@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2, Shield } from "lucide-react";
+import { Eye, EyeOff, Loader2, Shield, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -100,49 +100,41 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      {/* Subtle radial glow behind the card */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(155,109,255,0.08) 0%, transparent 70%)",
-          }}
-        />
-      </div>
+    <div className="flex min-h-screen items-center justify-center px-4 bg-surface-lowest relative overflow-hidden">
+      {/* Floating atmosphere elements */}
+      <div className="fixed top-40 -left-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="fixed bottom-40 -right-20 w-96 h-96 bg-pink/5 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm z-10">
         {/* Logo & Branding */}
-        <div className="mb-10 text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-xl border border-border-glow bg-card flex items-center justify-center">
-            <Shield size={24} className="text-accent" />
-          </div>
-          <h1 className="font-tech text-2xl tracking-widest text-glow-purple text-foreground">
-            The Protocol
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl md:text-6xl font-headline font-bold tracking-tighter leading-[0.9] mb-4">
+            THE <br />
+            <span className="text-gradient">PROTOCOL</span>
           </h1>
-          <p className="mt-2 text-xs text-muted tracking-wide">
-            Authenticate to continue
+          <p className="text-muted text-sm tracking-wide">
+            Authenticate to access the void
           </p>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-[10px] font-tech tracking-wider text-muted mb-1.5">
+            <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">
               Username
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card/80 px-3.5 py-2.5 text-sm text-foreground placeholder-muted/40 outline-none transition-all focus:border-accent/50 focus:ring-1 focus:ring-accent/20"
+              className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground placeholder-zinc-600 outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
               placeholder="—"
               required
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-tech tracking-wider text-muted mb-1.5">
+            <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">
               Password
             </label>
             <div className="relative">
@@ -150,14 +142,14 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-border bg-card/80 px-3.5 py-2.5 pr-10 text-sm text-foreground placeholder-muted/40 outline-none transition-all focus:border-accent/50 focus:ring-1 focus:ring-accent/20"
+                className="w-full bg-surface-container-high px-4 py-3 pr-10 text-sm text-foreground placeholder-zinc-600 outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
                 placeholder="—"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -165,7 +157,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="rounded-lg border border-danger/20 bg-danger/5 px-3 py-2">
+            <div className="bg-danger/5 border-l-4 border-danger p-3 rounded-r-lg">
               <p className="text-xs text-danger">{error}</p>
             </div>
           )}
@@ -173,61 +165,69 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-neon w-full rounded-lg px-4 py-2.5 text-sm font-tech tracking-wider disabled:opacity-50"
+            className="btn-gradient w-full py-4 rounded-sm text-xs tracking-widest font-headline font-bold uppercase flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
-              <Loader2 size={16} className="mx-auto animate-spin" />
+              <Loader2 size={16} className="animate-spin" />
             ) : (
-              "Initiate Protocol"
+              <>
+                Execute Protocol <Zap size={14} />
+              </>
             )}
           </button>
         </form>
 
         {/* Demo Divider */}
-        <div className="mt-8">
+        <div className="mt-10">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
+              <div className="w-full border-t border-white/5" />
             </div>
             <div className="relative flex justify-center text-[10px]">
-              <span className="bg-background px-3 font-tech tracking-wider text-muted">
+              <span className="bg-surface-lowest px-3 font-label tracking-[0.2em] text-zinc-500 uppercase">
                 Demo Access
               </span>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => handleDemoLogin("mistress")}
               disabled={demoLoading !== null || loading}
-              className="rounded-lg border border-border bg-card/60 px-4 py-2.5 text-xs font-medium text-foreground transition-all hover:border-accent/40 hover:text-accent hover:shadow-[0_0_12px_rgba(155,109,255,0.1)] disabled:opacity-50"
+              className="p-4 bg-surface-container border border-outline-variant/10 rounded-2xl flex flex-col items-center gap-2 hover:bg-primary/5 transition-all active:scale-95 disabled:opacity-50"
             >
               {demoLoading === "mistress" ? (
-                <Loader2 size={14} className="mx-auto animate-spin" />
+                <Loader2 size={20} className="animate-spin text-primary" />
               ) : (
-                <span className="font-tech tracking-wide text-[10px]">Commander</span>
+                <>
+                  <Shield size={20} className="text-primary" />
+                  <span className="font-headline font-bold text-[10px] uppercase tracking-widest">Commander</span>
+                </>
               )}
             </button>
             <button
               type="button"
               onClick={() => handleDemoLogin("slave")}
               disabled={demoLoading !== null || loading}
-              className="rounded-lg border border-border bg-card/60 px-4 py-2.5 text-xs font-medium text-foreground transition-all hover:border-pink/40 hover:text-pink hover:shadow-[0_0_12px_rgba(255,77,141,0.1)] disabled:opacity-50"
+              className="p-4 bg-surface-container border border-outline-variant/10 rounded-2xl flex flex-col items-center gap-2 hover:bg-pink/5 transition-all active:scale-95 disabled:opacity-50"
             >
               {demoLoading === "slave" ? (
-                <Loader2 size={14} className="mx-auto animate-spin" />
+                <Loader2 size={20} className="animate-spin text-pink" />
               ) : (
-                <span className="font-tech tracking-wide text-[10px]">Operative</span>
+                <>
+                  <Zap size={20} className="text-pink" />
+                  <span className="font-headline font-bold text-[10px] uppercase tracking-widest">Operative</span>
+                </>
               )}
             </button>
           </div>
         </div>
 
-        <p className="mt-8 text-center text-xs text-muted">
+        <p className="mt-8 text-center text-xs text-zinc-500">
           New operative?{" "}
-          <Link href="/signup" className="text-accent hover:text-accent-hover transition-colors">
-            Request access
+          <Link href="/signup" className="text-primary font-headline font-bold uppercase tracking-widest text-[10px] hover:text-pink transition-colors">
+            Request Access
           </Link>
         </p>
       </div>

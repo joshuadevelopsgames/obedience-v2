@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline" | "neon";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline" | "gradient";
   size?: "sm" | "md" | "lg";
 }
 
@@ -14,15 +14,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     switch (variant) {
       case "primary":
         variantStyles =
-          "bg-accent text-white hover:bg-accent-hover font-semibold shadow-md shadow-accent/20";
+          "bg-primary text-on-primary hover:bg-primary-container font-bold";
         break;
-      case "neon":
+      case "gradient":
         variantStyles =
-          "btn-neon font-tech tracking-wider";
+          "btn-gradient font-headline tracking-widest uppercase";
         break;
       case "secondary":
         variantStyles =
-          "bg-card text-foreground hover:bg-card-hover hover:text-accent font-medium border border-border";
+          "bg-surface-container text-foreground hover:bg-surface-bright font-medium border border-white/5";
         break;
       case "danger":
         variantStyles =
@@ -30,11 +30,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         break;
       case "ghost":
         variantStyles =
-          "bg-transparent text-muted hover:text-foreground hover:bg-card-hover font-medium";
+          "bg-transparent text-zinc-500 hover:text-foreground hover:bg-white/5 font-medium";
         break;
       case "outline":
         variantStyles =
-          "bg-transparent border border-border text-foreground hover:border-accent/40 hover:text-accent hover:shadow-[0_0_12px_rgba(155,109,255,0.1)] font-medium";
+          "btn-ghost font-medium";
         break;
     }
 
@@ -54,7 +54,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        className={`inline-flex items-center justify-center rounded-lg transition-all disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-accent/30 ${variantStyles} ${sizeStyles} ${className}`}
+        className={`inline-flex items-center justify-center rounded-sm transition-all disabled:opacity-50 disabled:pointer-events-none focus:outline-none active:scale-95 ${variantStyles} ${sizeStyles} ${className}`}
         {...props}
       >
         {children}

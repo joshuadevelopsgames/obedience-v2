@@ -4,7 +4,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className = "", ...props }, ref) => (
     <div
       ref={ref}
-      className={`rounded-xl border border-border bg-card p-4 card-glow transition-all ${className}`}
+      className={`rounded-2xl bg-surface-container p-6 border border-white/5 card-glow transition-all ${className}`}
       {...props}
     />
   )
@@ -26,7 +26,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
   ({ className = "", ...props }, ref) => (
     <h3
       ref={ref}
-      className={`font-tech text-sm tracking-wider text-foreground ${className}`}
+      className={`font-headline font-bold tracking-tight text-foreground ${className}`}
       {...props}
     />
   )
@@ -55,7 +55,7 @@ export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className = "", ...props }, ref) => (
     <div
       ref={ref}
-      className={`mt-4 flex items-center pt-2 ${className}`}
+      className={`mt-4 flex items-center pt-4 border-t border-white/5 ${className}`}
       {...props}
     />
   )
