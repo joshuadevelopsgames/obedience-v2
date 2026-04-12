@@ -49,20 +49,20 @@ const slaveNav = [
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
 
-// Mobile bottom bar: 5 items — covers full feature set
+// Mobile bottom bar — Comms moved to floating FAB
 const mistressMobileNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Home" },
   { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
   { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
-  { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
+  { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
 const slaveMobileNav = [
   { href: "/sub", icon: LayoutDashboard, label: "Home" },
   { href: "/sub/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/sub/journal", icon: BookOpen, label: "Journal" },
   { href: "/sub/rituals", icon: Shield, label: "Chamber" },
-  { href: "/sub/rewards", icon: Gift, label: "Vault" },
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
@@ -142,9 +142,17 @@ export function AppShell({ children, profile }: AppShellProps) {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <button className="text-zinc-500 hover:text-pink transition-colors duration-300">
             <Bell size={20} />
+          </button>
+          {/* Mobile-only logout */}
+          <button
+            onClick={handleLogout}
+            className="lg:hidden text-zinc-500 hover:text-zinc-300 transition-colors duration-300"
+            aria-label="Sign out"
+          >
+            <LogOut size={20} />
           </button>
           <div className="hidden lg:flex items-center gap-3 pl-6 border-l border-white/10">
             <div className="text-right">
@@ -236,6 +244,17 @@ export function AppShell({ children, profile }: AppShellProps) {
           </div>
         </main>
       </div>
+
+      {/* ── Floating Comms Button (mobile only) ───── */}
+      <Link
+        href={isMistress ? "/mistress/messages" : "/sub/messages"}
+        className={`lg:hidden fixed bottom-24 right-4 z-50 w-12 h-12 rounded-full btn-gradient flex items-center justify-center shadow-lg active:scale-90 transition-transform ${
+          pathname.endsWith("/messages") ? "opacity-0 pointer-events-none" : ""
+        }`}
+        aria-label="Messages"
+      >
+        <MessageCircle size={20} />
+      </Link>
 
       {/* ── Mobile Bottom Tab Bar ──────────────────── */}
       <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-4 pb-2 z-50 bottom-tab-bar">

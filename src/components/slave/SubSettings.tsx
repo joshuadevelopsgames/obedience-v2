@@ -43,6 +43,24 @@ interface Props {
   pairId?: string;
 }
 
+// Defined outside component so React doesn't remount them on every keystroke
+function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`bg-surface-low rounded-xl border border-outline-variant/10 p-6 ${className}`}>{children}</div>;
+}
+
+function SectionHeading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 mb-5">
+      <span className="text-primary">{icon}</span>
+      <h2 className="text-xs font-headline font-bold tracking-widest uppercase">{children}</h2>
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">{children}</p>;
+}
+
 export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds, allLimits, selectedLimitIds, pairId }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
@@ -130,22 +148,6 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
   const softLimits = contract?.content?.soft_limits || [];
   const curiosities = contract?.content?.curiosities || [];
 
-  const SectionCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-    <div className={`bg-surface-low rounded-xl border border-outline-variant/10 p-6 ${className}`}>
-      {children}
-    </div>
-  );
-
-  const SectionHeading = ({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) => (
-    <div className="flex items-center gap-2 mb-5">
-      <span className="text-primary">{icon}</span>
-      <h2 className="text-xs font-headline font-bold tracking-widest uppercase">{children}</h2>
-    </div>
-  );
-
-  const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-    <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">{children}</p>
-  );
 
   return (
     <div className="flex flex-col gap-8 max-w-2xl">
