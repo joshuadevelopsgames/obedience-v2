@@ -48,18 +48,20 @@ function formatDateDivider(dateString: string) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+type GroupedItem =
+  | { type: "divider"; label: string }
+  | { type: "message"; msg: Message };
+
 // Group messages with date dividers
-function groupMessages(messages: Message[]) {
-  const grouped: { type: "divider"; label: string } | { type: "message"; msg: Message }[] = [];
+function groupMessages(messages: Message[]): GroupedItem[] {
+  const grouped: GroupedItem[] = [];
   let lastDate = "";
   for (const msg of messages) {
     const d = new Date(msg.created_at).toDateString();
     if (d !== lastDate) {
-      // @ts-ignore
       grouped.push({ type: "divider", label: formatDateDivider(msg.created_at) });
       lastDate = d;
     }
-    // @ts-ignore
     grouped.push({ type: "message", msg });
   }
   return grouped;
