@@ -39,6 +39,29 @@ export function PhotoDemandBanner({ userId, initialDemand }: PhotoDemandBannerPr
     return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
   }, []);
 
+  // Fetch initial demand if not provided
+  useEffect(() => {
+    const fetchActiveDemand = async () => {
+      if (demand) return;
+
+      const { data } = await supabase
+        .from('photo_demands')
+        .select('*')
+        .eq('slave_id', userId)
+        .eq('status', 'pending')
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data) {
+        setDemand(data);
+      }
+    };
+
+    fetchActiveDemand();
+  }, [userId, supabase, demand]);
+
   // Subscribe to realtime demand updates
   useEffect(() => {
     const channel = supabase
