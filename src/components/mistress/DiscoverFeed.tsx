@@ -233,7 +233,7 @@ export function DiscoverFeed({
             <p className="text-muted font-headline text-sm mb-1">Neural buffer empty</p>
             <p className="text-zinc-600 text-xs font-label mb-6">Let AI generate personalized protocols for your submissive</p>
             <button
-              onClick={handleGenerateTasks}
+              onClick={() => setShowDeliveryModeModal(true)}
               disabled={generatingTasks}
               className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-2 mx-auto disabled:opacity-50"
             >
