@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, Clock, X, Loader2, Zap, Pencil, Sparkles, CheckCircle2, AlertTriangle, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -52,6 +52,16 @@ const MODES: { id: PunishmentMode; label: string; icon: React.ReactNode; desc: s
 
 export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandButtonProps) {
   const [open, setOpen] = useState(false);
+
+  // Lock body scroll on mobile when modal is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
   const [prompt, setPrompt] = useState('');
   const [windowSeconds, setWindowSeconds] = useState(300);
   const [useCustomTime, setUseCustomTime] = useState(false);
@@ -189,8 +199,8 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-surface-low border border-outline-variant/20 rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md mx-0 sm:mx-4 space-y-5 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm touch-none">
+          <div className="bg-surface-low border border-outline-variant/20 rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md mx-0 sm:mx-4 space-y-5 max-h-[90vh] overflow-y-auto overscroll-contain touch-auto">
 
             {/* Header */}
             <div className="flex items-center justify-between">

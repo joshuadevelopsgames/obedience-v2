@@ -247,7 +247,7 @@ export function PhotoDemandBanner({ userId, initialDemand }: PhotoDemandBannerPr
           ) : (
             <div className="space-y-3">
               {/* Preview */}
-              <div className="relative rounded-xl overflow-hidden aspect-video bg-surface-container">
+              <div className="relative rounded-xl overflow-hidden h-40 sm:h-56 bg-surface-container">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={preview!} alt="Preview" className="w-full h-full object-cover" />
                 <button

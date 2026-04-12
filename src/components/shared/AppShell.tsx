@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import type { Profile } from "@/types/database";
 import {
   Crown,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -77,6 +79,34 @@ export function AppShell({ children, profile }: AppShellProps) {
     router.push("/login");
     router.refresh();
   };
+
+  // Global photo demand listener — fires wherever Jay is in the app
+  useEffect(() => {
+    if (isMistress) return;
+
+    const channel = supabase
+      .channel('global-photo-demand')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'photo_demands', filter: `slave_id=eq.${profile.id}` },
+        (payload) => {
+          const demand = payload.new as { status: string; prompt: string };
+          if (demand.status === 'pending') {
+            toast.error('📸 Photo demanded!', {
+              description: demand.prompt,
+              duration: 10000,
+              action: {
+                label: 'Respond',
+                onClick: () => router.push('/sub/tasks'),
+              },
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [profile.id, isMistress, supabase, router]);
 
   // XP
   const xpForLevel = (lvl: number) => lvl * lvl * 25;

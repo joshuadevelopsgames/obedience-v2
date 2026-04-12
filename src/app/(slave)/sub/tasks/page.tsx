@@ -62,9 +62,7 @@ export default async function TasksPage() {
 
   return (
     <div className="space-y-4">
-      {activeDemand && (
-        <PhotoDemandBanner userId={user.id} initialDemand={activeDemand} />
-      )}
+      <PhotoDemandBanner userId={user.id} initialDemand={activeDemand ?? null} />
       <TaskHistory
         profile={profile}
         pair={pair}
