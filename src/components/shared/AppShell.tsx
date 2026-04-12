@@ -139,11 +139,11 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
           minHeight: "5rem",
         }}>
         <div className="flex items-center gap-4 lg:gap-8">
-          <div className="flex flex-col items-start leading-none">
+          <div className="flex flex-col items-center leading-none">
             <img
               src="/protocol.png"
               alt="The Protocol"
-              className="hidden lg:block h-7 w-auto mb-0.5 drop-shadow-[0_0_8px_rgba(204,151,255,0.5)]"
+              className="hidden lg:block h-7 w-auto mb-1 drop-shadow-[0_0_8px_rgba(204,151,255,0.5)]"
             />
             <span className="text-2xl font-bold tracking-tighter text-gradient font-headline">
               THE PROTOCOL
