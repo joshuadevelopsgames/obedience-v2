@@ -205,15 +205,38 @@ export function ContractModal({ pairId, slaveName, onClose }: Props) {
                     <textarea
                       value={contract.expectations}
                       onChange={(e) => setContract((c) => ({ ...c, expectations: e.target.value }))}
-                      rows={10}
+                      rows={12}
                       className="w-full bg-surface-container border border-outline-variant/20 rounded-xl px-4 py-3 text-sm text-foreground leading-relaxed outline-none focus:border-primary/40 resize-none transition-colors"
                     />
                   ) : (
                     <div
-                      className="bg-surface-container rounded-xl border border-outline-variant/10 p-5 text-sm leading-relaxed text-foreground cursor-pointer hover:border-primary/20 transition-colors"
+                      className="bg-surface-container rounded-xl border border-outline-variant/10 overflow-hidden cursor-pointer hover:border-primary/20 transition-colors group"
                       onClick={() => setEditingExpectations(true)}
                     >
-                      {contract.expectations || <span className="text-muted">Click to edit expectations…</span>}
+                      {/* Section header — looks like a contract article */}
+                      <div className="px-5 py-3 border-b border-outline-variant/10 flex items-center justify-between">
+                        <span className="text-[9px] font-headline font-bold tracking-[0.2em] uppercase text-primary/60">
+                          Article I — Mutual Expectations
+                        </span>
+                        <span className="text-[9px] text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity font-label">
+                          click to edit
+                        </span>
+                      </div>
+                      {/* Body */}
+                      <div className="px-5 py-4 space-y-3">
+                        {contract.expectations
+                          ? contract.expectations
+                              .split(/\n\n+/)
+                              .map((para) => para.trim())
+                              .filter(Boolean)
+                              .map((para, i) => (
+                                <p key={i} className="text-sm leading-[1.75] text-foreground/90 tracking-wide">
+                                  {para}
+                                </p>
+                              ))
+                          : <span className="text-sm text-muted italic">Click to edit expectations…</span>
+                        }
+                      </div>
                     </div>
                   )}
                 </div>

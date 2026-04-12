@@ -118,7 +118,7 @@ Generate a contract draft. Keep it concise but meaningful — this is a real agr
 
 Respond ONLY with valid JSON:
 {
-  "expectations": "2-3 paragraph statement of mutual expectations and dynamic principles (as a single string)",
+  "expectations": "2-3 paragraph statement of mutual expectations and dynamic principles. Separate each paragraph with \\n\\n. Do NOT use bullet points or numbered lists.",
   "rules": ["rule 1", "rule 2", "rule 3", "rule 4", "rule 5"],
   "curiosities": ["thing 1 to explore", "thing 2 to explore", "thing 3 to explore"]
 }
