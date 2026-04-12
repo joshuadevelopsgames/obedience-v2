@@ -3,12 +3,11 @@
 import {
   CheckCircle2,
   Clock,
-  Camera,
-  FileText,
   Flame,
   Shield,
   Trophy,
   AlertOctagon,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -27,10 +26,10 @@ interface Props {
 
 const categoryColors: Record<string, string> = {
   service: "text-blue-400",
-  obedience: "text-purple",
-  training: "text-accent",
+  obedience: "text-accent",
+  training: "text-warning",
   self_care: "text-emerald-400",
-  creative: "text-pink-400",
+  creative: "text-pink",
   endurance: "text-red-400",
   protocol: "text-cyan-400",
 };
@@ -38,9 +37,9 @@ const categoryColors: Record<string, string> = {
 const levelTiers = [
   { max: 10, name: "Initiate", color: "text-zinc-400" },
   { max: 25, name: "Devoted", color: "text-blue-400" },
-  { max: 50, name: "Bound", color: "text-purple" },
-  { max: 75, name: "Surrendered", color: "text-accent" },
-  { max: 100, name: "Transcendent", color: "text-yellow-300" },
+  { max: 50, name: "Bound", color: "text-accent" },
+  { max: 75, name: "Surrendered", color: "text-pink" },
+  { max: 100, name: "Transcendent", color: "text-warning" },
 ];
 
 export function SubDashboard({
@@ -70,6 +69,12 @@ export function SubDashboard({
   const nextLevelXp = xpForLevel(profile.level + 1);
   const xpProgress =
     ((profile.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100;
+  const clampedProgress = Math.max(2, Math.min(xpProgress, 100));
+
+  // Circular ring math
+  const ringRadius = 52;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference - (ringCircumference * clampedProgress) / 100;
 
   const handleStartTask = async (task: Task) => {
     await supabase
@@ -92,8 +97,8 @@ export function SubDashboard({
 
     toast(
       level === "yellow"
-        ? "Yellow — slowing down. Your Dominant has been notified."
-        : "Red — full stop. All tasks paused. Your Dominant has been notified.",
+        ? "Yellow — slowing down. Your Commander has been notified."
+        : "Red — full stop. All protocols paused.",
       { duration: 5000 }
     );
     router.refresh();
@@ -101,121 +106,151 @@ export function SubDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Hero / Level Card */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">
+      {/* Hero / Level Card with circular ring */}
+      <div
+        className="rounded-xl border border-border bg-card p-6"
+        style={{ background: "linear-gradient(180deg, rgba(155,109,255,0.04) 0%, var(--card) 100%)" }}
+      >
+        <div className="flex items-center gap-5">
+          {/* Circular XP Ring */}
+          <div className="relative flex-shrink-0">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle
+                cx="60" cy="60" r={ringRadius}
+                fill="none"
+                stroke="var(--border)"
+                strokeWidth="5"
+              />
+              <circle
+                cx="60" cy="60" r={ringRadius}
+                fill="none"
+                stroke="url(#heroGradient)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={ringCircumference}
+                strokeDashoffset={ringOffset}
+                className="progress-ring-circle"
+              />
+              <defs>
+                <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="var(--accent)" />
+                  <stop offset="100%" stopColor="var(--pink)" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-foreground">{profile.level}</span>
+              <span className="text-[9px] font-tech tracking-wider text-muted">Level</span>
+            </div>
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h1 className="font-tech text-lg tracking-wider text-glow-purple truncate">
               {profile.collar_name || profile.display_name}
             </h1>
-            <p className={`text-sm font-medium ${tier.color}`}>{tier.name}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold text-accent">{profile.level}</p>
-            <p className="text-xs text-muted">Level</p>
-          </div>
-        </div>
+            <p className={`text-xs font-tech tracking-wider ${tier.color} mt-0.5`}>
+              {tier.name}
+            </p>
 
-        {/* XP Bar */}
-        <div className="mb-2">
-          <div className="flex justify-between text-xs text-muted mb-1">
-            <span>{profile.xp} XP</span>
-            <span>{nextLevelXp} XP</span>
-          </div>
-          <div className="h-2.5 rounded-full bg-border overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-yellow-300 xp-bar-fill transition-all"
-              style={{ width: `${Math.max(2, Math.min(xpProgress, 100))}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Streak & Stats */}
-        <div className="flex items-center gap-4 mt-3">
-          {profile.streak_current > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Flame size={16} className="text-orange-400 streak-flame" />
-              <span className="text-sm font-medium">
-                {profile.streak_current} day streak
-              </span>
+            {/* XP text */}
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-xs text-muted">{profile.xp}</span>
+              <div className="flex-1 h-1.5 rounded-full bg-border overflow-hidden">
+                <div
+                  className="h-full rounded-full xp-bar-fill"
+                  style={{ width: `${clampedProgress}%` }}
+                />
+              </div>
+              <span className="text-xs text-muted">{nextLevelXp}</span>
             </div>
-          )}
-          <div className="flex items-center gap-1.5 text-sm text-muted">
-            <Trophy size={14} />
-            Best: {profile.streak_best}
+
+            {/* Streak */}
+            <div className="flex items-center gap-3 mt-2">
+              {profile.streak_current > 0 && (
+                <div className="flex items-center gap-1">
+                  <Flame size={14} className="text-orange-400 streak-flame" />
+                  <span className="text-xs font-medium text-foreground">
+                    {profile.streak_current}d
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-xs text-muted">
+                <Trophy size={12} />
+                <span>Best: {profile.streak_best}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Safe Word (always visible) */}
+      {/* Safe Word (always visible when green) */}
       {pair && pair.safe_word_state === "green" && (
         <div className="flex gap-2">
           <button
             onClick={() => triggerSafeWord("yellow")}
-            className="flex-1 rounded-lg border border-yellow-500/30 bg-yellow-500/5 py-2 text-xs font-medium text-yellow-400 hover:bg-yellow-500/10 transition-colors"
+            className="flex-1 rounded-lg border border-warning/20 bg-warning/5 py-2.5 text-[10px] font-tech tracking-wider text-warning hover:bg-warning/10 transition-colors"
           >
-            🟡 Slow Down
+            Slow Down
           </button>
           <button
             onClick={() => triggerSafeWord("red")}
-            className="flex-1 rounded-lg border border-danger/30 bg-danger/5 py-2 text-xs font-medium text-danger hover:bg-danger/10 transition-colors safe-word-pulse"
+            className="flex-1 rounded-lg border border-danger/20 bg-danger/5 py-2.5 text-[10px] font-tech tracking-wider text-danger hover:bg-danger/10 transition-colors safe-word-pulse"
           >
-            🔴 Full Stop
+            Full Stop
           </button>
         </div>
       )}
 
       {pair?.safe_word_state === "red" && (
-        <div className="rounded-xl border border-danger bg-danger/10 p-4 flex items-center gap-3">
-          <AlertOctagon size={20} className="text-danger" />
+        <div className="rounded-xl border border-danger/40 bg-danger/5 p-4 flex items-center gap-3">
+          <AlertOctagon size={20} className="text-danger flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-danger">Safe Word Active</p>
-            <p className="text-xs text-muted">
-              All tasks are paused. Take the time you need.
+            <p className="text-xs font-tech tracking-wider text-danger">Protocol Halted</p>
+            <p className="text-xs text-muted mt-0.5">
+              All directives paused. Take the time you need.
             </p>
           </div>
         </div>
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-bold">{activeTasks.length}</p>
-          <p className="text-xs text-muted">Active</p>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-xl border border-border bg-card p-3 text-center card-glow">
+          <p className="text-xl font-bold text-foreground">{activeTasks.length}</p>
+          <p className="text-[10px] font-tech tracking-wider text-muted mt-0.5">Active</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-bold">{pendingReview.length}</p>
-          <p className="text-xs text-muted">Pending</p>
+        <div className="rounded-xl border border-border bg-card p-3 text-center card-glow">
+          <p className="text-xl font-bold text-foreground">{pendingReview.length}</p>
+          <p className="text-[10px] font-tech tracking-wider text-muted mt-0.5">Pending</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3 text-center">
-          <p className="text-xl font-bold text-success">
-            {completedToday.length}
-          </p>
-          <p className="text-xs text-muted">Today</p>
+        <div className="rounded-xl border border-border bg-card p-3 text-center card-glow">
+          <p className="text-xl font-bold text-success">{completedToday.length}</p>
+          <p className="text-[10px] font-tech tracking-wider text-muted mt-0.5">Today</p>
         </div>
       </div>
 
       {/* Today's Rituals */}
       {rituals.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Shield size={18} className="text-purple" />
+          <h2 className="font-tech text-xs tracking-wider text-muted mb-3 flex items-center gap-2">
+            <Shield size={14} className="text-accent" />
             Rituals
           </h2>
           <div className="space-y-2">
             {rituals.map((ritual) => (
               <div
                 key={ritual.id}
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 card-glow"
               >
                 <div>
-                  <p className="text-sm font-medium">{ritual.title}</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-sm font-medium text-foreground">{ritual.title}</p>
+                  <p className="text-[10px] font-tech tracking-wider text-muted mt-0.5">
                     {ritual.schedule || "Daily"}
                   </p>
                 </div>
-                <button className="rounded-lg bg-purple/10 px-3 py-1.5 text-xs font-medium text-purple hover:bg-purple/20">
-                  Begin
+                <button className="btn-neon rounded-lg px-3 py-1.5 text-[10px] font-tech tracking-wider">
+                  Execute
                 </button>
               </div>
             ))}
@@ -225,50 +260,56 @@ export function SubDashboard({
 
       {/* Tasks */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Your Tasks</h2>
+        <h2 className="font-tech text-xs tracking-wider text-muted mb-3 flex items-center gap-2">
+          <Zap size={14} className="text-pink" />
+          Directives
+        </h2>
         {activeTasks.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-            <Clock size={24} className="mx-auto mb-2 text-muted" />
+          <div className="rounded-xl border border-dashed border-border bg-card/30 p-10 text-center">
+            <div className="mx-auto mb-3 w-10 h-10 rounded-full border border-border flex items-center justify-center">
+              <Clock size={18} className="text-muted" />
+            </div>
             <p className="text-sm text-muted">
-              No tasks assigned yet. Your Dominant will send some your way.
+              No active directives. Awaiting orders from Command.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {activeTasks.map((task) => (
               <div
                 key={task.id}
-                className="rounded-xl border border-border bg-card overflow-hidden"
+                className="rounded-xl border border-border bg-card overflow-hidden card-glow"
               >
                 <div className="flex items-center justify-between px-4 py-3">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span
-                        className={`text-xs font-medium ${categoryColors[task.category] || "text-muted"}`}
+                        className={`text-[10px] font-tech tracking-wider ${categoryColors[task.category] || "text-muted"}`}
                       >
                         {task.category.replace("_", " ")}
                       </span>
-                      <span className="text-xs text-muted">
-                        {"★".repeat(task.difficulty)}
+                      <span className="text-[10px] text-muted/50">
+                        {"●".repeat(task.difficulty)}
+                        {"○".repeat(5 - task.difficulty)}
                       </span>
                     </div>
-                    <h3 className="text-sm font-medium">{task.title}</h3>
+                    <h3 className="text-sm font-medium text-foreground truncate">{task.title}</h3>
                     {task.description && (
                       <p className="text-xs text-muted mt-0.5 line-clamp-1">
                         {task.description}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 ml-3">
-                    <span className="text-xs font-medium text-accent">
+                  <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                    <span className="text-[10px] font-tech text-accent">
                       +{task.xp_reward}
                     </span>
                     {task.status === "assigned" ? (
                       <button
                         onClick={() => handleStartTask(task)}
-                        className="rounded-lg bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20"
+                        className="btn-neon rounded-lg px-3 py-1.5 text-[10px] font-tech tracking-wider"
                       >
-                        Start
+                        Begin
                       </button>
                     ) : (
                       <button
@@ -277,7 +318,7 @@ export function SubDashboard({
                             expandedTask === task.id ? null : task.id
                           )
                         }
-                        className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-medium text-success hover:bg-success/20"
+                        className="rounded-lg bg-success/10 border border-success/20 px-3 py-1.5 text-xs font-medium text-success hover:bg-success/20 transition-colors"
                       >
                         <CheckCircle2 size={14} />
                       </button>
@@ -287,9 +328,9 @@ export function SubDashboard({
 
                 {/* Proof submission */}
                 {expandedTask === task.id && (
-                  <div className="border-t border-border px-4 py-3 bg-background/50">
-                    <p className="text-xs text-muted mb-2">
-                       Submit your proof ({task.proof_type})
+                  <div className="border-t border-border px-4 py-3 bg-background-elevated">
+                    <p className="text-[10px] font-tech tracking-wider text-muted mb-2">
+                      Submit proof — {task.proof_type}
                     </p>
                     <ProofUpload
                       taskId={task.id}
@@ -311,10 +352,15 @@ export function SubDashboard({
 
       {/* Not paired */}
       {!pair && (
-        <div className="rounded-xl border border-purple/30 bg-purple/5 p-6 text-center">
-          <h2 className="font-semibold text-purple mb-2">Not Paired Yet</h2>
+        <div
+          className="rounded-xl border border-pink/20 p-6 text-center"
+          style={{ background: "linear-gradient(180deg, rgba(255,77,141,0.05) 0%, transparent 100%)" }}
+        >
+          <h2 className="font-tech text-sm tracking-wider text-pink mb-2">
+            Awaiting Connection
+          </h2>
           <p className="text-sm text-muted">
-            Ask your Dominant for their pair code, or share yours from settings.
+            Request a protocol code from your Commander or share yours from settings.
           </p>
         </div>
       )}

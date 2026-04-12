@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist",
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Taskflow Pro",
+  title: "The Protocol",
   description: "AI-powered task management with RPG progression",
 };
 
@@ -19,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased dark`}>
+      <body className="min-h-full flex flex-col bg-background text-foreground bg-grid">
         {children}
         <Toaster
           theme="dark"
@@ -30,6 +35,7 @@ export default function RootLayout({
               background: "var(--card)",
               border: "1px solid var(--border)",
               color: "var(--foreground)",
+              fontFamily: "var(--font-inter), system-ui, sans-serif",
             },
           }}
         />
