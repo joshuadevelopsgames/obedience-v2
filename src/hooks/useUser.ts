@@ -8,13 +8,15 @@ import type { User } from "@supabase/supabase-js";
 // Stable singleton — don't recreate on every render
 const supabase = createClient();
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-  return data;
+async function fetchProfile(): Promise<Profile | null> {
+  try {
+    const res = await fetch("/api/me");
+    if (!res.ok) return null;
+    const { profile } = await res.json();
+    return profile;
+  } catch {
+    return null;
+  }
 }
 
 export function useUser() {
@@ -32,12 +34,12 @@ export function useUser() {
         setUser(currentUser);
 
         if (currentUser) {
-          const p = await fetchProfile(currentUser.id);
+          const p = await fetchProfile();
 
           // If profile still null (e.g. trigger lag on brand-new account), retry once
           if (!p) {
             await new Promise((r) => setTimeout(r, 1200));
-            const retry = await fetchProfile(currentUser.id);
+            const retry = await fetchProfile();
             setProfile(retry);
           } else {
             setProfile(p);
