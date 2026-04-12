@@ -1,0 +1,25 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function DashboardRedirect() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, onboarded")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.onboarded) redirect("/onboard");
+
+  if (profile.role === "mistress") {
+    redirect("/mistress");
+  } else {
+    redirect("/sub");
+  }
+}
