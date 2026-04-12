@@ -204,9 +204,9 @@ export function MistressDashboard({
 
         {/* Active Missions (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2 className="font-headline text-xl font-bold tracking-tight">ACTIVE MISSIONS</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {pair && subProfile && (
                 <PhotoDemandButton
                   pairId={pair.id}

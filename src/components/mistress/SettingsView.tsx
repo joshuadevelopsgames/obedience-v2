@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Settings,
+  SlidersHorizontal,
   Copy,
   Check,
   AlertTriangle,
@@ -136,7 +136,7 @@ export function SettingsView({
       <div>
         <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
           COMMAND<br />
-          <span className="text-pink italic">SETTINGS</span>
+          <span className="text-pink italic">PREFERENCES</span>
         </h1>
         <p className="text-muted text-sm">Configure your dominance profile and dynamic preferences.</p>
       </div>
@@ -144,7 +144,7 @@ export function SettingsView({
       {/* Profile */}
       <SectionCard>
         <div className="flex items-center gap-2 mb-5">
-          <Settings size={16} className="text-primary" />
+          <SlidersHorizontal size={16} className="text-primary" />
           <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Profile</h2>
         </div>
         <div className="space-y-5">

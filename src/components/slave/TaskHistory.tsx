@@ -178,12 +178,12 @@ export function TaskHistory({
               <div key={task.id} className="bg-surface-low rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 overflow-hidden glow-border-primary">
                 {/* Task Row */}
                 <div
-                  className="flex items-center justify-between p-6 cursor-pointer"
+                  className="flex items-center justify-between p-4 sm:p-6 cursor-pointer"
                   onClick={() =>
                     setExpandedTask(isExpanded ? null : task.id)
                   }
                 >
-                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                  <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
                     <div className="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-pink border border-outline-variant/10 flex-shrink-0">
                       <TaskIcon category={task.category} />
                     </div>
@@ -204,16 +204,16 @@ export function TaskHistory({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 ml-4 flex-shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-4 flex-shrink-0">
                     <span
-                      className={`text-[10px] font-headline font-bold tracking-[0.2em] px-3 py-1 rounded border ${
+                      className={`text-[9px] sm:text-[10px] font-headline font-bold tracking-wider sm:tracking-[0.2em] px-2 sm:px-3 py-1 rounded border ${
                         statusStyles[task.status] || "text-zinc-400 bg-zinc-400/5 border-zinc-400/20"
                       }`}
                     >
                       {(statusLabels[task.status] || task.status).toUpperCase()}
                     </span>
                     {task.status === "approved" && task.updated_at && (
-                      <span className="text-xs text-zinc-500 font-headline">
+                      <span className="hidden sm:inline text-xs text-zinc-500 font-headline">
                         {new Date(task.updated_at).toLocaleDateString()}
                       </span>
                     )}

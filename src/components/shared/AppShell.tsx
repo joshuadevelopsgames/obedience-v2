@@ -12,10 +12,9 @@ import {
   Gift,
   Shield,
   MessageCircle,
-  Settings,
+  SlidersHorizontal,
   Sparkles,
   LogOut,
-  User,
   Bell,
   Lock,
   HelpCircle,
@@ -35,7 +34,7 @@ const mistressNav = [
   { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
-  { href: "/mistress/settings", icon: Settings, label: "Settings" },
+  { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
 
 const slaveNav = [
@@ -45,22 +44,24 @@ const slaveNav = [
   { href: "/sub/journal", icon: BookOpen, label: "Journal" },
   { href: "/sub/messages", icon: MessageCircle, label: "Comms" },
   { href: "/sub/rewards", icon: Gift, label: "Vault" },
-  { href: "/sub/settings", icon: Settings, label: "Settings" },
+  { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
 
-// Mobile bottom bar: 4 items max
+// Mobile bottom bar: 5 items — covers full feature set
 const mistressMobileNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Home" },
-  { href: "/mistress/tasks", icon: ListTodo, label: "Task" },
-  { href: "/mistress/messages", icon: MessageCircle, label: "Comm" },
-  { href: "/mistress/settings", icon: User, label: "Profile" },
+  { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
+  { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
+  { href: "/mistress/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
 const slaveMobileNav = [
   { href: "/sub", icon: LayoutDashboard, label: "Home" },
-  { href: "/sub/tasks", icon: ListTodo, label: "Task" },
-  { href: "/sub/messages", icon: MessageCircle, label: "Comm" },
-  { href: "/sub/settings", icon: User, label: "Profile" },
+  { href: "/sub/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/sub/rituals", icon: Shield, label: "Chamber" },
+  { href: "/sub/rewards", icon: Gift, label: "Vault" },
+  { href: "/sub/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
 export function AppShell({ children, profile }: AppShellProps) {

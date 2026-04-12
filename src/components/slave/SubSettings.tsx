@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Settings,
+  SlidersHorizontal,
   Upload,
   AlertTriangle,
   AlertOctagon,
@@ -130,14 +130,14 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
       <div>
         <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
           OPERATIVE<br />
-          <span className="text-pink italic">SETTINGS</span>
+          <span className="text-pink italic">PREFERENCES</span>
         </h1>
         <p className="text-muted text-sm">Manage your profile, limits, and safe word protocols.</p>
       </div>
 
       {/* Profile */}
       <SectionCard>
-        <SectionHeading icon={<Settings size={14} />}>Profile</SectionHeading>
+        <SectionHeading icon={<SlidersHorizontal size={14} />}>Profile</SectionHeading>
         <div className="space-y-5">
           <div>
             <SectionLabel>Display Name</SectionLabel>

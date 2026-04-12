@@ -95,7 +95,7 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
                 <Clock size={11} />
                 Time limit — failure triggers auto-punishment
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {WINDOWS.map((w) => (
                   <button
                     key={w.seconds}
