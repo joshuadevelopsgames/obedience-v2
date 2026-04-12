@@ -16,7 +16,17 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { KinkLibrary } from "@/components/shared/KinkLibrary";
+import LimitsLibrary from "@/components/shared/LimitsLibrary";
 import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink } from "@/types/database";
+
+interface Limit {
+  id: string;
+  name: string;
+  description: string;
+  category: 'hard' | 'soft';
+  is_custom: boolean;
+  created_by: string | null;
+}
 
 interface Props {
   profile: Profile;
@@ -26,6 +36,9 @@ interface Props {
   userId: string;
   allKinks: Kink[];
   selectedKinkIds: string[];
+  allLimits: Limit[];
+  selectedLimitIds: string[];
+  pairId?: string;
 }
 
 const toneDescriptions: Record<TonePreference, string> = {
@@ -43,6 +56,9 @@ export function SettingsView({
   userId,
   allKinks,
   selectedKinkIds,
+  allLimits,
+  selectedLimitIds,
+  pairId,
 }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [title, setTitle] = useState(profile.title || "");
@@ -371,6 +387,27 @@ export function SettingsView({
           selectedKinkIds={selectedKinkIds}
         />
       </div>
+
+      {/* Limits Library */}
+      {pair && pairId && (
+        <div className="bg-surface-low rounded-xl border border-outline-variant/10 p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield size={14} className="text-primary" />
+            <h2 className="text-xs font-headline font-bold tracking-widest uppercase">Limits & Boundaries</h2>
+          </div>
+          <p className="text-xs text-muted mb-5 leading-relaxed">
+            Set hard and soft limits. Any limit that matches a kink will automatically remove that kink from your profile to prevent conflicts.
+          </p>
+          <LimitsLibrary
+            profileId={userId}
+            pairId={pairId}
+            allLimits={allLimits}
+            selectedLimitIds={selectedLimitIds}
+            selectedKinkIds={selectedKinkIds}
+            allKinksByName={Object.fromEntries(allKinks.map((k) => [k.name, k.id]))}
+          />
+        </div>
+      )}
 
       {/* Unpair Confirm Modal */}
       {showUnpairConfirm && (

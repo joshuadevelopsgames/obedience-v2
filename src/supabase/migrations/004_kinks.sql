@@ -164,21 +164,12 @@ INSERT INTO kinks (name, description, category, is_custom, created_by) VALUES
 ('Cupping', 'Creating suction marks on skin', 'fluid', false, NULL),
 ('Hickeys', 'Leaving bruises through suction', 'fluid', false, NULL),
 
--- EXTREME (110-124)
-('Needle Play', 'Using needles for sensation and penetration', 'extreme', false, NULL),
-('Piercing', 'Permanent or temporary body piercings', 'extreme', false, NULL),
-('Branding', 'Burning marks into skin', 'extreme', false, NULL),
-('Scarification', 'Creating scars through cutting or branding', 'extreme', false, NULL),
-('Knife Play', 'Using knives for threat or light cutting', 'extreme', false, NULL),
-('Cutting', 'Making cuts on the body', 'extreme', false, NULL),
+-- EXTREME (110-115)
 ('Suspension Bondage', 'Being hung by restraints', 'extreme', false, NULL),
 ('Impact Breathplay', 'Combining impact play with breath restriction', 'extreme', false, NULL),
 ('CNC (Consensual Non-Consent)', 'Simulated non-consensual scenarios', 'extreme', false, NULL),
 ('Extreme Pain Play', 'High-intensity pain for pleasure', 'extreme', false, NULL),
 ('Extreme Humiliation', 'Intense degradation scenarios', 'extreme', false, NULL),
-('Extreme Body Modification', 'Temporary body modification for sex', 'extreme', false, NULL),
-('Fetus Fetish', 'Pregnancy fetishization', 'extreme', false, NULL),
-('Anal Prolapse', 'Eversion of the rectal tissue', 'extreme', false, NULL),
 ('Long-Term Anal Training', 'Extended anal stretching and training', 'extreme', false, NULL);
 
 -- Create indexes for performance

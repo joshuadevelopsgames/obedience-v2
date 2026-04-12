@@ -36,6 +36,12 @@ export default async function SettingsPage() {
   const { data: allKinks }       = await supabase.from("kinks").select("*").order("category").order("name");
   const { data: profileKinks }   = await supabase.from("profile_kinks").select("kink_id").eq("profile_id", user.id);
 
+  // Fetch limits library + profile selections
+  const { data: allLimits }      = await supabase.from("limits_library").select("*").order("category").order("name");
+  const { data: profileLimits }  = pair
+    ? await supabase.from("profile_limits").select("limit_id").eq("profile_id", user.id).eq("pair_id", pair.id)
+    : { data: null };
+
   return (
     <SettingsView
       profile={profile}
@@ -45,6 +51,9 @@ export default async function SettingsPage() {
       userId={user.id}
       allKinks={allKinks || []}
       selectedKinkIds={(profileKinks || []).map((pk: any) => pk.kink_id)}
+      allLimits={allLimits || []}
+      selectedLimitIds={(profileLimits || []).map((pl: any) => pl.limit_id)}
+      pairId={pair?.id}
     />
   );
 }

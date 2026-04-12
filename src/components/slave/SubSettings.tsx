@@ -17,7 +17,17 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { KinkLibrary } from "@/components/shared/KinkLibrary";
+import LimitsLibrary from "@/components/shared/LimitsLibrary";
 import type { Profile, Pair, Contract, MoodCheckin, Kink } from "@/types/database";
+
+interface Limit {
+  id: string;
+  name: string;
+  description: string;
+  category: 'hard' | 'soft';
+  is_custom: boolean;
+  created_by: string | null;
+}
 
 interface Props {
   profile: Profile;
@@ -26,9 +36,12 @@ interface Props {
   recentMood: MoodCheckin[];
   allKinks: Kink[];
   selectedKinkIds: string[];
+  allLimits: Limit[];
+  selectedLimitIds: string[];
+  pairId?: string;
 }
 
-export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds }: Props) {
+export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds, allLimits, selectedLimitIds, pairId }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
   const [saving, setSaving] = useState(false);
@@ -335,6 +348,24 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
           selectedKinkIds={selectedKinkIds}
         />
       </SectionCard>
+
+      {/* Limits Library */}
+      {pair && pairId && (
+        <SectionCard>
+          <SectionHeading icon={<Shield size={14} />}>Limits & Boundaries</SectionHeading>
+          <p className="text-xs text-muted mb-5 leading-relaxed -mt-3">
+            Set hard and soft limits. Any limit that matches a kink will automatically remove that kink from your profile to prevent conflicts.
+          </p>
+          <LimitsLibrary
+            profileId={profile.id}
+            pairId={pairId}
+            allLimits={allLimits}
+            selectedLimitIds={selectedLimitIds}
+            selectedKinkIds={selectedKinkIds}
+            allKinksByName={Object.fromEntries(allKinks.map((k) => [k.name, k.id]))}
+          />
+        </SectionCard>
+      )}
 
       {/* Mood History */}
       {recentMood.length > 0 && (
