@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Crown, Heart, Loader2 } from "lucide-react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type Role = "mistress" | "slave";
 
@@ -17,7 +18,9 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+  if (!supabaseRef.current) supabaseRef.current = createClient();
+  const supabase = supabaseRef.current;
 
   const handleSignup = async () => {
     if (!role) return;

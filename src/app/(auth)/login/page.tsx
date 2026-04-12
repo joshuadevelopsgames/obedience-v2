@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-
-// Create client once outside component — prevents re-creation on every render
-const supabase = createClient();
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -14,6 +12,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // useRef so the client is created once on the client side, never during SSR
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+  if (!supabaseRef.current) supabaseRef.current = createClient();
+  const supabase = supabaseRef.current;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
