@@ -89,6 +89,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
     difficulty: 3,
     proof_type: "text" as const,
     due_date: "",
+    delivery_mode: "online" as "online" | "in_person",
   });
 
   const draftTasks = tasks.filter((t) => t.status === "suggested");
@@ -187,6 +188,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
         xp_reward: formData.difficulty * 15,
         proof_type: formData.proof_type,
         due_at: formData.due_date || null,
+        delivery_mode: formData.delivery_mode,
         status: deploy ? "assigned" : "suggested",
         ai_generated: false,
       });
@@ -194,7 +196,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
       if (!error) {
         toast.success(deploy ? "Protocol deployed!" : "Saved to drafts");
         setShowCreateForm(false);
-        setFormData({ title: "", description: "", category: "service", difficulty: 3, proof_type: "text", due_date: "" });
+        setFormData({ title: "", description: "", category: "service", difficulty: 3, proof_type: "text", due_date: "", delivery_mode: "online" });
         if (!deploy) setActiveTab("drafts");
         router.refresh();
       } else toast.error("Failed to create task");
@@ -285,6 +287,29 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                   <option value="checkin">Check-in</option>
                   <option value="location">Location</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Delivery Mode */}
+            <div>
+              <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-3 uppercase">Delivery Mode</label>
+              <div className="grid grid-cols-2 gap-3">
+                {(["online", "in_person"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, delivery_mode: mode })}
+                    className={`py-3 px-4 rounded-lg border text-xs font-headline font-bold tracking-widest uppercase transition-all ${
+                      formData.delivery_mode === mode
+                        ? mode === "in_person"
+                          ? "bg-pink/10 border-pink/40 text-pink"
+                          : "bg-primary/10 border-primary/40 text-primary"
+                        : "bg-surface-container-high border-transparent text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {mode === "online" ? "🌐 Online Only" : "🤝 In Person"}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -420,6 +445,12 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                         <span className="w-1 h-1 rounded-full bg-zinc-700" />
                         <span className="text-primary text-xs font-headline font-bold">
                           +{task.xp_reward} XP
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                        <span className={`text-[10px] font-headline font-medium ${
+                          (task as any).delivery_mode === 'in_person' ? 'text-pink' : 'text-cyan-400'
+                        }`}>
+                          {(task as any).delivery_mode === 'in_person' ? '🤝 In Person' : '🌐 Online'}
                         </span>
                       </div>
                       {task.description && (

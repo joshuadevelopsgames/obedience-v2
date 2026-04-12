@@ -201,6 +201,12 @@ export function TaskHistory({
                         <span className="text-primary text-xs font-headline font-bold">
                           +{task.xp_reward} XP
                         </span>
+                        {(task as any).delivery_mode === 'in_person' && (
+                          <>
+                            <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                            <span className="text-[10px] font-headline font-medium text-pink">🤝 In Person</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

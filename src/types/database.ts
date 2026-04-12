@@ -64,6 +64,7 @@ export interface Task {
   due_at: string | null
   ai_generated: boolean
   ai_context: Record<string, unknown> | null
+  delivery_mode: 'online' | 'in_person'
   created_at: string
   updated_at: string
 }
