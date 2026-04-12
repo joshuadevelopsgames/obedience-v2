@@ -9,13 +9,29 @@ export default async function DashboardRedirect() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from("profiles")
     .select("role, onboarded, must_change_password")
     .eq("id", user.id)
     .single();
 
-  if (!profile) redirect("/login");
+  if (!profile) {
+    // Fallback: If auth user exists but profile trigger failed, create it manually
+    await supabase.from("profiles").insert({
+      id: user.id,
+      display_name: user.user_metadata?.display_name || "User",
+      role: user.user_metadata?.role || "slave",
+    });
+
+    const { data: retryProfile } = await supabase
+      .from("profiles")
+      .select("role, onboarded, must_change_password")
+      .eq("id", user.id)
+      .single();
+      
+    if (!retryProfile) redirect("/login");
+    profile = retryProfile;
+  }
 
   // Force password change if flagged
   if (profile.must_change_password) redirect("/change-password");

@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -59,7 +61,8 @@ export default function LoginPage() {
         }
         setDemoLoading(null);
       } else {
-        window.location.href = "/dashboard";
+        router.refresh();
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Demo login error:", err);
@@ -90,7 +93,8 @@ export default function LoginPage() {
         );
         setLoading(false);
       } else {
-        window.location.href = "/dashboard";
+        router.refresh();
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);
