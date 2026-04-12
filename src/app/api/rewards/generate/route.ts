@@ -7,10 +7,10 @@ const XAI_MODEL = process.env.XAI_MODEL || 'grok-3';
 const XAI_ENDPOINT = 'https://api.x.ai/v1/chat/completions';
 
 // POST /api/rewards/generate
-// Returns 5 reward ideas based on the pair's kinks — does NOT save anything.
+// Returns 5 reward ideas based on the pair's kinks, limits, and delivery mode — does NOT save anything.
 export async function POST(req: Request) {
   try {
-    const { pairId } = await req.json();
+    const { pairId, deliveryMode = 'online' } = await req.json();
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -27,16 +27,27 @@ export async function POST(req: Request) {
 
     const admin = createAdminClient();
 
-    const [{ data: slaveProfile }, { data: mistressKinks }, { data: slaveKinks }] = await Promise.all([
+    const [{ data: slaveProfile }, { data: mistressKinks }, { data: slaveKinks }, { data: slaveLimits }, { data: mistressLimits }] = await Promise.all([
       admin.from('profiles').select('collar_name, display_name, level').eq('id', pair.slave_id).single(),
       admin.from('profile_kinks').select('kinks_library(name, category)').eq('pair_id', pairId).eq('profile_id', user.id),
       admin.from('profile_kinks').select('kinks_library(name, category)').eq('pair_id', pairId).eq('profile_id', pair.slave_id),
+      admin.from('profile_limits').select('limits_library(name, category)').eq('pair_id', pairId).eq('profile_id', pair.slave_id),
+      admin.from('profile_limits').select('limits_library(name, category)').eq('pair_id', pairId).eq('profile_id', user.id),
     ]);
 
     const sharedKinks = [
       ...(mistressKinks || []).map((k: any) => k.kinks_library?.name),
       ...(slaveKinks || []).map((k: any) => k.kinks_library?.name),
     ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+
+    // Combine all limits from both parties — hard limits absolutely off-table, soft are cautions
+    const allLimits = [
+      ...(slaveLimits || []).map((l: any) => ({ name: l.limits_library?.name, category: l.limits_library?.category })),
+      ...(mistressLimits || []).map((l: any) => ({ name: l.limits_library?.name, category: l.limits_library?.category })),
+    ].filter((l) => l.name);
+
+    const hardLimits = [...new Set(allLimits.filter((l) => l.category === 'hard').map((l) => l.name))];
+    const softLimits = [...new Set(allLimits.filter((l) => l.category === 'soft').map((l) => l.name))];
 
     const slaveName = slaveProfile?.collar_name || slaveProfile?.display_name || 'the operative';
 
@@ -53,11 +64,25 @@ export async function POST(req: Request) {
       });
     }
 
+    const isInPerson = deliveryMode === 'in_person';
+    const deliveryContext = isInPerson
+      ? 'Delivery mode: IN PERSON — rewards should involve real-world physical privileges, time together, or tangible experiences that can only happen when physically present (e.g. being held, special outings, physical touch, chosen activities together, cooking a meal together, etc.).'
+      : 'Delivery mode: ONLINE — rewards must be things that can be granted or experienced remotely (e.g. extra free time, messages of praise, choosing a movie/playlist together remotely, relaxed check-in schedule, getting to skip a task, etc.).';
+
+    const limitsContext = [
+      hardLimits.length > 0 ? `HARD LIMITS (never suggest anything related to these): ${hardLimits.join(', ')}` : '',
+      softLimits.length > 0 ? `Soft limits (proceed with great caution, do not feature prominently): ${softLimits.join(', ')}` : '',
+    ].filter(Boolean).join('\n');
+
     const prompt = `You are generating reward ideas for a D/s dynamic. The submissive is named "${slaveName}" (Level ${slaveProfile?.level || 1}).
 
 Shared kinks/interests: ${sharedKinks.length > 0 ? sharedKinks.join(', ') : 'not specified'}
 
-Generate exactly 5 reward ideas the Mistress could offer for purchase with XP. Rewards should feel special, earned, and dynamic-appropriate — mix privileges, experiences, and indulgences. They should be things a submissive would genuinely want to spend XP on.
+${deliveryContext}
+
+${limitsContext}
+
+Generate exactly 5 reward ideas the Mistress could offer for purchase with XP. Rewards should feel special, earned, and dynamic-appropriate — mix privileges, experiences, and indulgences. They should be things a submissive would genuinely want to spend XP on. Ensure all rewards are appropriate for the delivery mode above.
 
 Respond ONLY with valid JSON:
 {

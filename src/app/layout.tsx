@@ -16,6 +16,15 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "The Protocol",
   description: "AI-powered task management with RPG progression",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "The Protocol",
+    statusBarStyle: "black-translucent",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +34,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#000000" />
+        {/* iOS standalone splash */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="The Protocol" />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster

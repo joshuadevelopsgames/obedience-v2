@@ -111,13 +111,18 @@ export function NotificationBell({ userId, isMistress }: Props) {
       {/* Bell button */}
       <button
         onClick={handleOpen}
-        className="relative text-zinc-500 hover:text-pink transition-colors duration-300"
+        className={`relative transition-colors duration-300 ${unread > 0 ? 'text-pink' : 'text-zinc-500 hover:text-pink'}`}
         aria-label="Notifications"
       >
-        <Bell size={20} />
+        <Bell
+          size={20}
+          className={unread > 0 ? 'animate-[wiggle_0.5s_ease-in-out]' : ''}
+          style={unread > 0 ? { filter: 'drop-shadow(0 0 6px rgba(255,51,102,0.7))' } : {}}
+        />
         {unread > 0 && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-pink text-[9px] font-bold text-white flex items-center justify-center leading-none">
-            {unread > 9 ? "9+" : unread}
+            <span className="absolute inset-0 rounded-full bg-pink animate-ping opacity-75" />
+            <span className="relative">{unread > 9 ? "9+" : unread}</span>
           </span>
         )}
       </button>

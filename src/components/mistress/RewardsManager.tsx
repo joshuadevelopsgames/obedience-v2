@@ -8,6 +8,7 @@ import {
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import type { Reward } from '@/types/database';
+import { DeliveryModeModal } from '@/components/mistress/DeliveryModeModal';
 
 interface GeneratedReward {
   title: string;
@@ -36,6 +37,7 @@ export function RewardsManager({ pairId, rewards: initialRewards }: Props) {
   const [generating, setGenerating] = useState(false);
   const [generatedRewards, setGeneratedRewards] = useState<GeneratedReward[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   // Per-reward toggle/delete
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -69,14 +71,15 @@ export function RewardsManager({ pairId, rewards: initialRewards }: Props) {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (deliveryMode: 'online' | 'in_person') => {
+    setShowDeliveryModal(false);
     setGenerating(true);
     setGeneratedRewards([]);
     try {
       const res = await fetch('/api/rewards/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pairId }),
+        body: JSON.stringify({ pairId, deliveryMode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -148,6 +151,12 @@ export function RewardsManager({ pairId, rewards: initialRewards }: Props) {
 
   return (
     <div className="space-y-5">
+      <DeliveryModeModal
+        isOpen={showDeliveryModal}
+        isLoading={generating}
+        onSelect={handleGenerate}
+        onClose={() => setShowDeliveryModal(false)}
+      />
 
       {/* Action row */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -159,7 +168,7 @@ export function RewardsManager({ pairId, rewards: initialRewards }: Props) {
           Add Reward
         </button>
         <button
-          onClick={() => { setShowAddForm(false); handleGenerate(); }}
+          onClick={() => { setShowAddForm(false); setShowDeliveryModal(true); }}
           disabled={generating}
           className="flex items-center gap-1.5 px-4 py-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant/20 text-muted hover:text-foreground rounded-lg text-[10px] font-headline font-bold tracking-widest uppercase transition-colors disabled:opacity-50"
         >

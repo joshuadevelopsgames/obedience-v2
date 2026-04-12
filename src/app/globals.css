@@ -248,3 +248,40 @@ body {
   background: rgba(255, 103, 173, 0.05);
   box-shadow: 0 0 15px rgba(236, 72, 153, 0.1);
 }
+
+/* ── Notification bell wiggle ───────────────────────── */
+@keyframes wiggle {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(12deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(8deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* ── PWA / iOS Safe Area & Touch Polish ─────────────── */
+@supports (padding: max(0px)) {
+  .bottom-tab-bar {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* Suppress iOS tap highlight flash */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent iOS elastic bounce scroll on the shell */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Smooth momentum scrolling in scrollable containers */
+.overflow-y-auto, main {
+  -webkit-overflow-scrolling: touch;
+}

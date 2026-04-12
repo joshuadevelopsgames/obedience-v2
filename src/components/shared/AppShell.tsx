@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PairSwitcher } from "@/components/slave/PairSwitcher";
 import { useVersionCheck } from "@/hooks/useVersionCheck";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 
 interface PairSwitcherData {
@@ -82,6 +83,7 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   const isMistress = profile.role === "mistress";
   const nav = isMistress ? mistressNav : slaveNav;
   const mobileNav = isMistress ? mistressMobileNav : slaveMobileNav;
+  const unreadMessages = useUnreadNotifications(profile.id, "message");
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -127,8 +129,14 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   return (
     <div className="min-h-screen bg-surface-lowest text-foreground">
       {/* ── Top Navigation Bar ─────────────────────── */}
-      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 lg:px-10 h-20 bg-black/80 backdrop-blur-xl"
-        style={{ boxShadow: "0 0 30px rgba(168,85,247,0.06)" }}>
+      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 lg:px-10 bg-black/80 backdrop-blur-xl"
+        style={{
+          boxShadow: "0 0 30px rgba(168,85,247,0.06)",
+          paddingTop: "max(1.25rem, env(safe-area-inset-top))",
+          paddingBottom: "1.25rem",
+          height: "auto",
+          minHeight: "5rem",
+        }}>
         <div className="flex items-center gap-4 lg:gap-8">
           <span className="text-2xl font-bold tracking-tighter text-gradient font-headline">
             THE PROTOCOL
@@ -189,7 +197,7 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
         </div>
       </header>
 
-      <div className="flex pt-20">
+      <div className="flex" style={{ paddingTop: "max(5rem, calc(5rem + env(safe-area-inset-top, 0px) - 1.25rem))" }}>
         {/* ── Desktop Side Navigation ──────────────── */}
         <aside className="hidden lg:flex h-[calc(100vh-5rem)] w-72 flex-col bg-surface-lowest border-r border-white/5 py-8 gap-8 font-headline sticky top-20">
           {/* Operative/Commander Badge */}
@@ -262,23 +270,31 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
       {/* ── Floating Comms Button (mobile only) ───── */}
       <Link
         href={isMistress ? "/mistress/messages" : "/sub/messages"}
-        className={`lg:hidden fixed bottom-24 right-4 z-50 w-12 h-12 rounded-full btn-gradient flex items-center justify-center shadow-lg active:scale-90 transition-transform ${
+        className={`lg:hidden fixed z-50 w-12 h-12 rounded-full btn-gradient flex items-center justify-center shadow-lg active:scale-90 transition-transform ${
           pathname.endsWith("/messages") ? "opacity-0 pointer-events-none" : ""
         }`}
+        style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))", right: "1rem" }}
         aria-label="Messages"
       >
         <MessageCircle size={20} />
+        {unreadMessages > 0 && !pathname.endsWith("/messages") && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-pink text-[9px] font-bold text-white flex items-center justify-center leading-none">
+            <span className="absolute inset-0 rounded-full bg-pink animate-ping opacity-75" />
+            <span className="relative">{unreadMessages > 9 ? "9+" : unreadMessages}</span>
+          </span>
+        )}
       </Link>
 
       {/* ── Mobile Bottom Tab Bar ──────────────────── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-4 pb-2 z-50 bottom-tab-bar">
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-end px-4 z-50 bottom-tab-bar"
+        style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))", paddingTop: "0.5rem", height: "auto" }}>
         {mobileNav.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center transition-all active:scale-90 duration-200 ${
+              className={`flex flex-col items-center justify-end py-2 transition-all active:scale-90 duration-200 ${
                 active
                   ? "text-primary"
                   : "text-zinc-600 hover:text-pink"
