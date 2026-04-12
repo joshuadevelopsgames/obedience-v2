@@ -72,7 +72,7 @@ function ProofPhotoViewer({ storagePath, proofType }: { storagePath: string; pro
   );
 }
 
-export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
+export function TaskManagement({ pair, profile, tasks: initialTasks, proofs }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [activeTab, setActiveTab] = useState<"drafts" | "active" | "pending" | "completed" | "all">("drafts");
@@ -81,6 +81,9 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [rejectNote, setRejectNote] = useState<Record<string, string>>({});
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // Local task list so we can optimistically update without waiting for router.refresh()
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -142,32 +145,39 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
     setSubmitting(false);
   };
 
-  // Deploy a draft task — makes it visible to the slave
+  // Deploy a draft task — optimistic: flip status instantly, then sync with server
   const handleDeploy = async (taskId: string) => {
-    setSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from("tasks")
-        .update({ status: "assigned" })
-        .eq("id", taskId);
-      if (!error) { toast.success("Protocol deployed!"); router.refresh(); }
-      else toast.error("Failed to deploy");
-    } catch { toast.error("Error deploying task"); }
-    setSubmitting(false);
+    // Optimistically flip status
+    setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, status: "assigned" as const } : t));
+    setActiveTab("active");
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: "assigned" })
+      .eq("id", taskId);
+    if (!error) { toast.success("Protocol deployed!"); }
+    else {
+      // Restore draft status on failure
+      setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, status: "suggested" as const } : t));
+      setActiveTab("drafts");
+      toast.error("Failed to deploy");
+    }
   };
 
-  // Delete a task permanently
+  // Delete a task — optimistic: remove instantly, restore if server fails
   const handleDelete = async (taskId: string) => {
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from("tasks").delete().eq("id", taskId);
-      if (!error) {
-        toast.success("Task deleted");
-        setConfirmDelete(null);
-        router.refresh();
-      } else toast.error("Failed to delete task");
-    } catch { toast.error("Error deleting task"); }
-    setSubmitting(false);
+    const removed = tasks.find((t) => t.id === taskId);
+    // Immediately remove from local state and close confirmation strip
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    setConfirmDelete(null);
+
+    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+    if (error) {
+      // Restore the task if delete failed
+      if (removed) setTasks((prev) => [...prev, removed].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      toast.error("Failed to delete task");
+    } else {
+      toast.success("Task deleted");
+    }
   };
 
   const handleCreateTask = async (e: React.FormEvent, deploy: boolean) => {
@@ -177,7 +187,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("tasks").insert({
+      const { data: newTask, error } = await supabase.from("tasks").insert({
         pair_id: pair.id,
         created_by: profile.id,
         assigned_to: pair.slave_id,
@@ -191,14 +201,15 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
         delivery_mode: formData.delivery_mode,
         status: deploy ? "assigned" : "suggested",
         ai_generated: false,
-      });
+      }).select().single();
 
-      if (!error) {
+      if (!error && newTask) {
+        // Optimistically prepend new task to local list
+        setTasks((prev) => [newTask as Task, ...prev]);
         toast.success(deploy ? "Protocol deployed!" : "Saved to drafts");
         setShowCreateForm(false);
         setFormData({ title: "", description: "", category: "service", difficulty: 3, proof_type: "text", due_date: "", delivery_mode: "online" });
-        if (!deploy) setActiveTab("drafts");
-        router.refresh();
+        setActiveTab(deploy ? "active" : "drafts");
       } else toast.error("Failed to create task");
     } catch { toast.error("Error creating task"); }
     setSubmitting(false);
