@@ -46,6 +46,8 @@ export interface Pair {
   safe_word_state: SafeWordState
   safe_word_at: string | null
   cooldown_until: string | null
+  slave_xp: number
+  slave_level: number
   created_at: string
 }
 

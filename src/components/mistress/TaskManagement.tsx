@@ -123,9 +123,27 @@ export function TaskManagement({ pair, profile, tasks: initialTasks, proofs }: P
   const handleApprove = async (taskId: string) => {
     setSubmitting(true);
     try {
+      const task = tasks.find((t) => t.id === taskId);
       const { error } = await supabase.from("tasks").update({ status: "approved" }).eq("id", taskId);
-      if (!error) { toast.success("Task approved!"); router.refresh(); }
-      else toast.error("Failed to approve task");
+      if (!error) {
+        // Credit XP to the pair's slave progression
+        if (pair && task) {
+          const { data: currentPair } = await supabase
+            .from("pairs")
+            .select("slave_xp")
+            .eq("id", pair.id)
+            .single();
+          const newXp = (currentPair?.slave_xp ?? 0) + task.xp_reward;
+          const newLevel = Math.min(100, Math.floor(newXp / 500) + 1);
+          await supabase
+            .from("pairs")
+            .update({ slave_xp: newXp, slave_level: newLevel })
+            .eq("id", pair.id);
+        }
+        // Optimistically update local task status
+        setTasks((prev) => prev.map((t) => t.id === taskId ? { ...t, status: "approved" as const } : t));
+        toast.success(`Task approved! +${task?.xp_reward ?? 0} XP awarded`);
+      } else toast.error("Failed to approve task");
     } catch { toast.error("Error approving task"); }
     setSubmitting(false);
   };

@@ -24,11 +24,15 @@ interface Props {
 
 export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
   const [redeeming, setRedeeming] = useState<string | null>(null);
+  // Track pair XP locally so balance updates instantly on redemption
+  const [pairXp, setPairXp] = useState<number>(pair?.slave_xp ?? 0);
   const supabase = createClient();
   const router = useRouter();
 
   const handleRedeem = async (reward: Reward) => {
-    if (profile.xp < reward.xp_cost) { toast.error("Not enough XP"); return; }
+    if (!pair) { toast.error("Not paired"); return; }
+    if (pairXp < reward.xp_cost) { toast.error("Not enough XP"); return; }
+
     setRedeeming(reward.id);
     const { error: redemptionError } = await supabase.from("redemptions").insert({
       reward_id: reward.id,
@@ -36,8 +40,13 @@ export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
       status: "pending",
     });
     if (!redemptionError) {
-      const newXp = profile.xp - reward.xp_cost;
-      await supabase.from("profiles").update({ xp: newXp }).eq("id", profile.id);
+      const newXp = pairXp - reward.xp_cost;
+      const newLevel = Math.min(100, Math.floor(newXp / 500) + 1);
+      await supabase
+        .from("pairs")
+        .update({ slave_xp: newXp, slave_level: newLevel })
+        .eq("id", pair.id);
+      setPairXp(newXp); // instant UI update
       toast.success(`Redeemed "${reward.title}"! Your Mistress will fulfill it soon.`);
       router.refresh();
     } else { toast.error("Failed to redeem reward"); }
@@ -64,7 +73,7 @@ export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
           <div className="glass-panel border border-outline-variant/10 p-6 rounded-xl">
             <p className="text-[10px] font-label uppercase tracking-widest text-primary mb-2">Available Balance</p>
             <p className="text-4xl font-headline font-bold tracking-tight text-primary" style={{ textShadow: "0 0 20px rgba(204,151,255,0.4)" }}>
-              {profile.xp.toLocaleString()}
+              {pairXp.toLocaleString()}
             </p>
             <p className="text-xs text-muted mt-1 font-label">XP available</p>
           </div>
@@ -93,7 +102,7 @@ export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rewards.map((reward) => {
-              const canAfford = profile.xp >= reward.xp_cost;
+              const canAfford = pairXp >= reward.xp_cost;
               const isRedeeming = redeeming === reward.id;
 
               return (

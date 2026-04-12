@@ -55,7 +55,11 @@ export function SubDashboard({
   const supabase = createClient();
   const router = useRouter();
 
-  const tier = levelTiers.find((t) => profile.level <= t.max) || levelTiers[4];
+  // Per-pair XP/level — falls back to 0/1 if no pair yet
+  const pairXp = pair?.slave_xp ?? 0;
+  const pairLevel = pair?.slave_level ?? 1;
+
+  const tier = levelTiers.find((t) => pairLevel <= t.max) || levelTiers[4];
   const activeTasks = tasks.filter((t) =>
     ["assigned", "in_progress"].includes(t.status)
   );
@@ -67,11 +71,10 @@ export function SubDashboard({
       new Date(t.updated_at).toDateString() === new Date().toDateString()
   );
 
-  const xpForLevel = (lvl: number) => lvl * lvl * 25;
-  const currentLevelXp = xpForLevel(profile.level);
-  const nextLevelXp = xpForLevel(profile.level + 1);
-  const xpProgress =
-    ((profile.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100;
+  // XP progress within current level (500 XP per level)
+  const xpPerLevel = 500;
+  const xpInCurrentLevel = pairXp % xpPerLevel;
+  const xpProgress = (xpInCurrentLevel / xpPerLevel) * 100;
   const clampedProgress = Math.max(2, Math.min(xpProgress, 100));
 
   // Ring math for 256px SVG (r=110)
@@ -121,7 +124,7 @@ export function SubDashboard({
             <span className="text-gradient">PROTOCOL</span>
           </h2>
           <p className="text-muted max-w-md text-lg leading-relaxed">
-            {profile.collar_name || profile.display_name} — {tier.name} submissive.
+            {profile.collar_name || profile.display_name} — Level {pairLevel} {tier.name}.
             Serve well. Grow deeper. Your Dominant's approval is everything.
           </p>
         </div>
@@ -150,7 +153,7 @@ export function SubDashboard({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-6xl font-headline font-bold">
-                    L-{String(profile.level).padStart(2, "0")}
+                    L-{String(pairLevel).padStart(2, "0")}
                   </span>
                   <span className="text-muted text-sm font-label tracking-widest uppercase">
                     Rank Level
@@ -162,7 +165,7 @@ export function SubDashboard({
                   {Math.round(clampedProgress)}% TO ASCENSION
                 </h3>
                 <p className="text-muted text-sm">
-                  {profile.xp.toLocaleString()} XP / {nextLevelXp.toLocaleString()} XP
+                  {pairXp.toLocaleString()} XP · next level in {(xpPerLevel - xpInCurrentLevel).toLocaleString()} XP
                 </p>
               </div>
             </div>

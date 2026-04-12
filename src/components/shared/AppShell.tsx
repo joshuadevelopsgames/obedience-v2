@@ -43,6 +43,7 @@ const mistressNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
   { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/mistress/rewards", icon: Gift, label: "Rewards" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
   { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences" },
@@ -63,16 +64,16 @@ const mistressMobileNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Home" },
   { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
   { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/mistress/rewards", icon: Gift, label: "Rewards" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
-  { href: "/mistress/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
 const slaveMobileNav = [
   { href: "/sub", icon: LayoutDashboard, label: "Home" },
   { href: "/sub/tasks", icon: ListTodo, label: "Tasks" },
-  { href: "/sub/journal", icon: BookOpen, label: "Journal" },
   { href: "/sub/rituals", icon: Shield, label: "Chamber" },
-  { href: "/sub/settings", icon: SlidersHorizontal, label: "Prefs" },
+  { href: "/sub/rewards", icon: Gift, label: "Vault" },
+  { href: "/sub/journal", icon: BookOpen, label: "Journal" },
 ];
 
 export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
