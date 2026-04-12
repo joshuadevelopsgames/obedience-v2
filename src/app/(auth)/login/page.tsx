@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -16,7 +17,6 @@ export default function LoginPage() {
     setDemoLoading(role);
     setError("");
     try {
-      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const credentials =
         role === "mistress"
@@ -61,7 +61,8 @@ export default function LoginPage() {
       } else {
         window.location.href = "/dashboard";
       }
-    } catch {
+    } catch (err) {
+      console.error("Demo login error:", err);
       setError("Something went wrong. Please try again.");
       setDemoLoading(null);
     }
@@ -73,8 +74,6 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Import and create client only inside the handler — never during SSR
-      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const email = `${username.toLowerCase().trim()}@taskflow.local`;
 
@@ -93,7 +92,8 @@ export default function LoginPage() {
       } else {
         window.location.href = "/dashboard";
       }
-    } catch {
+    } catch (err) {
+      console.error("Login error:", err);
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
