@@ -95,7 +95,7 @@ export async function POST(req: Request) {
 
     const { data: limits } = await supabase
       .from('limits')
-      .select('limit_text, category')
+      .select('description, category')
       .eq('pair_id', pairId)
       .eq('user_id', pair.slave_id);
 
@@ -105,12 +105,12 @@ export async function POST(req: Request) {
     // Build prompt
     const hardLimits = limits
       ?.filter((l: any) => l.category === 'hard')
-      .map((l: any) => l.limit_text)
+      .map((l: any) => l.description)
       .join(', ') || 'None specified';
 
     const softLimits = limits
       ?.filter((l: any) => l.category === 'soft')
-      .map((l: any) => l.limit_text)
+      .map((l: any) => l.description)
       .join(', ') || 'None specified';
 
     const recentTaskNames = recentTasks?.map((t: any) => t.title).join(', ') || 'None yet';
@@ -235,11 +235,10 @@ Return ONLY a JSON array with this exact structure:
     // Log to ai_generations
     await admin.from('ai_generations').insert({
       pair_id: pairId,
-      generation_type: 'task',
-      prompt: prompt.substring(0, 1000),
-      response: JSON.stringify(tasksData),
+      type: 'task',
+      prompt_sent: prompt.substring(0, 1000),
+      response: tasksData,
       model: XAI_MODEL,
-      tokens_used: grokData.usage?.total_tokens || 0,
     });
 
     return NextResponse.json({

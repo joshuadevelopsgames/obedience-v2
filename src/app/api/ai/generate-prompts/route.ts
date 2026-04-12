@@ -213,29 +213,16 @@ Return ONLY a JSON array with this exact structure:
     promptsData = [promptsData];
   }
 
-  // Insert journal prompts
-  const promptsToInsert = promptsData.map((p: any) => ({
-    pair_id: pairId,
-    prompt: p.prompt,
-    ai_generated_prompt: true,
-  }));
-
-  const { data: insertedPrompts } = await admin
-    .from('journal_entries')
-    .insert(promptsToInsert)
-    .select();
-
-  // Log to ai_generations
+  // Log to ai_generations (prompts are returned to the UI, not inserted as entries yet)
   await admin.from('ai_generations').insert({
     pair_id: pairId,
-    generation_type: 'journal_prompt',
-    prompt: prompt.substring(0, 1000),
-    response: JSON.stringify(promptsData),
+    type: 'journal_prompt',
+    prompt_sent: prompt.substring(0, 1000),
+    response: promptsData,
     model: XAI_MODEL,
-    tokens_used: grokData.usage?.total_tokens || 0,
   });
 
-  return { prompts: insertedPrompts || promptsData };
+  return { prompts: promptsData };
 }
 
 async function generateRitual(
@@ -327,11 +314,10 @@ Return ONLY a JSON object with this exact structure:
   // Log to ai_generations
   await admin.from('ai_generations').insert({
     pair_id: pairId,
-    generation_type: 'ritual',
-    prompt: prompt.substring(0, 1000),
-    response: JSON.stringify(ritualData),
+    type: 'ritual',
+    prompt_sent: prompt.substring(0, 1000),
+    response: ritualData,
     model: XAI_MODEL,
-    tokens_used: grokData.usage?.total_tokens || 0,
   });
 
   return { ritual: insertedRitual?.[0] || ritualData };
@@ -411,11 +397,10 @@ Return ONLY a JSON array with this exact structure:
   // Log to ai_generations (aftercare is mostly for display, not stored in separate table)
   await admin.from('ai_generations').insert({
     pair_id: pairId,
-    generation_type: 'aftercare',
-    prompt: prompt.substring(0, 1000),
-    response: JSON.stringify(aftercareData),
+    type: 'aftercare',
+    prompt_sent: prompt.substring(0, 1000),
+    response: aftercareData,
     model: XAI_MODEL,
-    tokens_used: grokData.usage?.total_tokens || 0,
   });
 
   return { aftercare: aftercareData };

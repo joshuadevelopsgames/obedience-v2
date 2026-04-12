@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     // Behavior log
     const { data: behaviorLog } = await supabase
       .from('behavior_log')
-      .select('behavior_type, description, xp_change, created_at')
+      .select('type, description, created_at')
       .eq('pair_id', pairId)
       .order('created_at', { ascending: false })
       .limit(30);
@@ -125,11 +125,11 @@ export async function POST(req: Request) {
 
     // Count behavior types
     const behaviorCounts = {
-      positive: behaviorLog?.filter((b: any) => b.behavior_type === 'positive')
+      positive: behaviorLog?.filter((b: any) => b.type === 'positive')
         .length || 0,
-      negative: behaviorLog?.filter((b: any) => b.behavior_type === 'negative')
+      negative: behaviorLog?.filter((b: any) => b.type === 'negative')
         .length || 0,
-      neutral: behaviorLog?.filter((b: any) => b.behavior_type === 'neutral')
+      neutral: behaviorLog?.filter((b: any) => b.type === 'neutral')
         .length || 0,
     };
 
@@ -224,11 +224,10 @@ Return ONLY a JSON object with this exact structure:
     const admin = await createAdminClient();
     await admin.from('ai_generations').insert({
       pair_id: pairId,
-      generation_type: 'analysis',
-      prompt: analysisPrompt.substring(0, 1000),
-      response: JSON.stringify(analysisData),
+      type: 'analysis',
+      prompt_sent: analysisPrompt.substring(0, 1000),
+      response: analysisData,
       model: XAI_MODEL,
-      tokens_used: grokData.usage?.total_tokens || 0,
     });
 
     return NextResponse.json({

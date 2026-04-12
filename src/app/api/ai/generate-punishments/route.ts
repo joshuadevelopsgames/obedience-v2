@@ -75,15 +75,15 @@ export async function POST(req: Request) {
 
     const { data: limits } = await supabase
       .from('limits')
-      .select('limit_text, category')
+      .select('description, category')
       .eq('pair_id', pairId)
       .eq('user_id', pair.slave_id);
 
     const { data: recentBehavior } = await supabase
       .from('behavior_log')
-      .select('behavior_type, description')
+      .select('type, description')
       .eq('pair_id', pairId)
-      .eq('user_id', pair.slave_id)
+      .eq('logged_by', pair.slave_id)
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -103,17 +103,17 @@ export async function POST(req: Request) {
     // Build prompt
     const hardLimits = limits
       ?.filter((l: any) => l.category === 'hard')
-      .map((l: any) => l.limit_text)
+      .map((l: any) => l.description)
       .join(', ') || 'None specified';
 
     const softLimits = limits
       ?.filter((l: any) => l.category === 'soft')
-      .map((l: any) => l.limit_text)
+      .map((l: any) => l.description)
       .join(', ') || 'None specified';
 
     const recentBehaviorText =
       recentBehavior && recentBehavior.length > 0
-        ? recentBehavior.map((b: any) => `- ${b.behavior_type}: ${b.description}`).join('\n')
+        ? recentBehavior.map((b: any) => `- ${b.type}: ${b.description}`).join('\n')
         : 'No recent behavior logged';
 
     const tonePreference = mistressProfile?.tone_preference || 'nurturing';
@@ -225,11 +225,10 @@ Return ONLY a JSON array with this exact structure:
     // Log to ai_generations
     await admin.from('ai_generations').insert({
       pair_id: pairId,
-      generation_type: 'punishment',
-      prompt: prompt.substring(0, 1000),
-      response: JSON.stringify(punishmentsData),
+      type: 'punishment',
+      prompt_sent: prompt.substring(0, 1000),
+      response: punishmentsData,
       model: XAI_MODEL,
-      tokens_used: grokData.usage?.total_tokens || 0,
     });
 
     return NextResponse.json({
