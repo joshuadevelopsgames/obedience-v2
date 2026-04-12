@@ -14,7 +14,7 @@ import type { Profile, Pair, Message } from "@/types/database";
 const EMOJI_CATEGORIES = [
   {
     label: "Favorites",
-    emojis: ["❤️", "🖤", "💜", "💗", "🔥", "✨", "😈", "🙏", "💦", "🥵", "😍", "🫦", "💋", "⛓️", "🎀", "🌹"],
+    emojis: ["❤️", "🖤", "💜", "💗", "🔥", "✨", "😈", "🙏", "💦", "🥵", "😍", "🫦", "💋", "⛓️", "🎀", "🌹", "🧎‍♂️", "🙇‍♂️"],
   },
   {
     label: "Faces",
