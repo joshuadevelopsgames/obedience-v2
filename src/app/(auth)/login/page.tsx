@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -12,28 +10,32 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // useRef so the client is created once on the client side, never during SSR
-  const supabaseRef = useRef<SupabaseClient | null>(null);
-  if (!supabaseRef.current) supabaseRef.current = createClient();
-  const supabase = supabaseRef.current;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const email = `${username.toLowerCase().trim()}@taskflow.local`;
+    try {
+      // Import and create client only inside the handler — never during SSR
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const email = `${username.toLowerCase().trim()}@taskflow.local`;
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError("Invalid username or password");
+      if (error) {
+        setError("Invalid username or password");
+        setLoading(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
-    } else {
-      window.location.href = "/dashboard";
     }
   };
 
@@ -59,8 +61,6 @@ export default function LoginPage() {
               className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-accent"
               placeholder="—"
               required
-              autoComplete="username"
-              autoFocus
             />
           </div>
 
@@ -76,7 +76,6 @@ export default function LoginPage() {
                 className="w-full rounded-lg border border-border bg-card px-3 py-2.5 pr-10 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-accent"
                 placeholder="—"
                 required
-                autoComplete="current-password"
               />
               <button
                 type="button"
@@ -88,9 +87,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && (
-            <p className="text-xs text-danger">{error}</p>
-          )}
+          {error && <p className="text-xs text-danger">{error}</p>}
 
           <button
             type="submit"
