@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { PhotoDemandButton } from "@/components/mistress/PhotoDemandButton";
 import type { Profile, Pair, Task, MoodCheckin } from "@/types/database";
 
 interface Props {
@@ -29,7 +30,17 @@ interface Props {
   recentMood: MoodCheckin[];
 }
 
-const moodEmoji = ["", "😢", "😔", "😐", "🙂", "😊"];
+import { Frown, Meh, Smile, SmilePlus, Heart } from "lucide-react";
+
+// Mood icon map: index 1-5 → icon + color
+const moodIcons = [
+  null,
+  <Frown size={16} className="text-[#ff3366]" key="1" />,
+  <Frown size={16} className="text-orange-400" key="2" />,
+  <Meh size={16} className="text-zinc-400" key="3" />,
+  <Smile size={16} className="text-[#00ff9d]" key="4" />,
+  <SmilePlus size={16} className="text-primary" key="5" />,
+];
 const categoryColors: Record<string, string> = {
   service: "text-blue-400",
   obedience: "text-primary",
@@ -185,7 +196,7 @@ export function MistressDashboard({
                 {subProfile.collar_name || subProfile.display_name}
               </span>
               {avgMood > 0 && (
-                <span className="ml-auto text-sm">{moodEmoji[Math.round(avgMood)]}</span>
+                <span className="ml-auto">{moodIcons[Math.round(avgMood)]}</span>
               )}
             </div>
           )}
@@ -195,18 +206,27 @@ export function MistressDashboard({
         <div className="lg:col-span-7 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="font-headline text-xl font-bold tracking-tight">ACTIVE MISSIONS</h2>
-            <button
-              onClick={handleGenerate}
-              disabled={generating || !pair}
-              className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-headline font-bold tracking-widest uppercase disabled:opacity-50"
-            >
-              {generating ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Brain size={14} />
+            <div className="flex items-center gap-2">
+              {pair && subProfile && (
+                <PhotoDemandButton
+                  pairId={pair.id}
+                  slaveId={pair.slave_id}
+                  slaveName={subProfile.collar_name || subProfile.display_name || 'operative'}
+                />
               )}
-              {generating ? "Processing" : "Generate"}
-            </button>
+              <button
+                onClick={handleGenerate}
+                disabled={generating || !pair}
+                className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-headline font-bold tracking-widest uppercase disabled:opacity-50"
+              >
+                {generating ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Brain size={14} />
+                )}
+                {generating ? "Processing" : "Generate"}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">

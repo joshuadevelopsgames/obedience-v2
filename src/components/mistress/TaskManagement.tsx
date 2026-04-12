@@ -9,7 +9,7 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -42,6 +42,34 @@ const statusStyles: Record<string, string> = {
   expired: "text-zinc-500 bg-zinc-500/5 border-zinc-500/20",
   suggested: "text-zinc-500 bg-zinc-500/5 border-zinc-500/20",
 };
+
+// Inner component to load a signed URL for a storage path and render photo/video
+function ProofPhotoViewer({ storagePath, proofType }: { storagePath: string; proofType: string }) {
+  const supabase = createClient();
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.storage.from('proofs').createSignedUrl(storagePath, 3600).then(({ data }) => {
+      if (data?.signedUrl) setUrl(data.signedUrl);
+    });
+  }, [storagePath]);
+
+  if (!url) return <div className="h-40 bg-surface-container rounded-xl animate-pulse" />;
+
+  if (proofType === 'photo') {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={url} alt="Proof photo" className="w-full max-h-64 object-cover rounded-xl hover:opacity-90 transition-opacity" />
+      </a>
+    );
+  }
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:text-pink transition-colors font-headline">
+      View {proofType} evidence ↗
+    </a>
+  );
+}
 
 export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
   const router = useRouter();
@@ -449,21 +477,14 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                 {/* Proof Review Panel */}
                 {task.status === "proof_submitted" && proof && isExpanded && (
                   <div className="border-t border-white/5 p-6 bg-surface-container space-y-4">
-                    <div className="bg-surface-container-high rounded-lg p-4">
-                      {proof.text_content ? (
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {proof.text_content}
-                        </p>
-                      ) : proof.content_url ? (
-                        <a
-                          href={proof.content_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:text-pink transition-colors font-headline"
-                        >
-                          View {proof.proof_type} evidence
-                        </a>
-                      ) : (
+                    <div className="bg-surface-container-high rounded-lg p-4 space-y-3">
+                      {proof.content_url && (
+                        <ProofPhotoViewer storagePath={proof.content_url} proofType={proof.proof_type} />
+                      )}
+                      {proof.text_content && (
+                        <p className="text-sm text-foreground leading-relaxed">{proof.text_content}</p>
+                      )}
+                      {!proof.content_url && !proof.text_content && (
                         <p className="text-sm text-zinc-500">No content submitted</p>
                       )}
                     </div>
