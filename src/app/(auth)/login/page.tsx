@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+
+// Create client once outside component — prevents re-creation on every render
+const supabase = createClient();
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -12,22 +14,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
-
-  // If already logged in, redirect to dashboard
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = "/dashboard";
-    });
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Map username to internal email format
     const email = `${username.toLowerCase().trim()}@taskflow.local`;
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -39,7 +31,6 @@ export default function LoginPage() {
       setError("Invalid username or password");
       setLoading(false);
     } else {
-      // Hard redirect so session cookies are fully set before server components run
       window.location.href = "/dashboard";
     }
   };
@@ -67,6 +58,7 @@ export default function LoginPage() {
               placeholder="—"
               required
               autoComplete="username"
+              autoFocus
             />
           </div>
 
