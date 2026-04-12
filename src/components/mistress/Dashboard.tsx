@@ -14,12 +14,24 @@ import {
   ArrowRight,
   Play,
   ChevronRight,
+  Camera,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { PhotoDemandButton } from "@/components/mistress/PhotoDemandButton";
 import type { Profile, Pair, Task, MoodCheckin } from "@/types/database";
+
+interface PhotoDemand {
+  id: string;
+  prompt: string;
+  window_seconds: number;
+  expires_at: string;
+  status: 'pending' | 'fulfilled' | 'expired' | 'cancelled';
+  photo_url: string | null;
+  caption: string | null;
+}
 
 interface Props {
   profile: Profile;
@@ -28,6 +40,7 @@ interface Props {
   tasks: Task[];
   suggestions: Task[];
   recentMood: MoodCheckin[];
+  activeDemand: PhotoDemand | null;
 }
 
 import { Frown, Meh, Smile, SmilePlus, Heart } from "lucide-react";
@@ -58,10 +71,69 @@ export function MistressDashboard({
   tasks,
   suggestions,
   recentMood,
+  activeDemand: initialDemand,
 }: Props) {
   const [generating, setGenerating] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState(suggestions);
+  const [demand, setDemand] = useState<PhotoDemand | null>(initialDemand);
+  const [demandSecondsLeft, setDemandSecondsLeft] = useState(0);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const supabase = createClient();
+
+  // Countdown timer for pending demand
+  const calcSecondsLeft = useCallback((expiresAt: string) =>
+    Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)), []);
+
+  useEffect(() => {
+    if (!demand || demand.status !== 'pending') return;
+    setDemandSecondsLeft(calcSecondsLeft(demand.expires_at));
+    const interval = setInterval(() => {
+      const s = calcSecondsLeft(demand.expires_at);
+      setDemandSecondsLeft(s);
+      if (s <= 0) clearInterval(interval);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [demand?.id, demand?.status, demand?.expires_at, calcSecondsLeft]);
+
+  // Realtime: watch for fulfillment or expiry
+  useEffect(() => {
+    if (!pair) return;
+    const channel = supabase
+      .channel('mistress-demand-watch')
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'photo_demands', filter: `pair_id=eq.${pair.id}` },
+        (payload) => {
+          const updated = payload.new as PhotoDemand;
+          setDemand(updated);
+          if (updated.status === 'fulfilled') {
+            toast.success('📸 Photo received!');
+          } else if (updated.status === 'expired') {
+            toast.error('⏰ Demand expired — punishment issued');
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [pair?.id, supabase]);
+
+  // Fetch signed URL when demand is fulfilled
+  useEffect(() => {
+    if (demand?.status !== 'fulfilled' || !demand.photo_url) return;
+    supabase.storage.from('proofs').createSignedUrl(demand.photo_url, 3600)
+      .then(({ data }) => { if (data) setPhotoUrl(data.signedUrl); });
+  }, [demand?.status, demand?.photo_url, supabase]);
+
+  const handleCancelDemand = async () => {
+    if (!demand) return;
+    const { error } = await supabase
+      .from('photo_demands')
+      .update({ status: 'cancelled' })
+      .eq('id', demand.id);
+    if (!error) {
+      setDemand(null);
+      toast.success('Demand cancelled');
+    }
+  };
 
   const activeTasks = tasks.filter(
     (t) => !["completed", "expired", "suggested"].includes(t.status)
@@ -225,11 +297,44 @@ export function MistressDashboard({
             <h2 className="font-headline text-xl font-bold tracking-tight">ACTIVE MISSIONS</h2>
             <div className="flex items-center gap-2 flex-wrap">
               {pair && subProfile && (
-                <PhotoDemandButton
-                  pairId={pair.id}
-                  slaveId={pair.slave_id}
-                  slaveName={subProfile.collar_name || subProfile.display_name || 'submissive'}
-                />
+                demand && demand.status === 'pending' ? (
+                  /* Pending demand status */
+                  <div className="flex items-center gap-2 px-3 py-2 bg-[#ff67ad]/10 border border-[#ff67ad]/30 rounded-sm">
+                    <Camera size={12} className="text-[#ff67ad]" />
+                    <span className="text-[10px] font-headline font-bold tracking-widest uppercase text-[#ff67ad]">
+                      Waiting
+                    </span>
+                    <span className="font-mono text-xs font-bold text-foreground tabular-nums">
+                      {String(Math.floor(demandSecondsLeft / 60)).padStart(2, '0')}:{String(demandSecondsLeft % 60).padStart(2, '0')}
+                    </span>
+                    <button onClick={handleCancelDemand} className="ml-1 text-muted hover:text-foreground transition-colors">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : demand && demand.status === 'fulfilled' ? (
+                  /* Fulfilled — show photo thumbnail */
+                  <div className="flex items-center gap-2 px-3 py-2 bg-[#00ff9d]/10 border border-[#00ff9d]/30 rounded-sm">
+                    <CheckCircle2 size={12} className="text-[#00ff9d]" />
+                    <span className="text-[10px] font-headline font-bold tracking-widest uppercase text-[#00ff9d]">
+                      Received
+                    </span>
+                    {photoUrl && (
+                      <a href={photoUrl} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photoUrl} alt="Submitted photo" className="h-7 w-7 rounded object-cover border border-[#00ff9d]/30 hover:opacity-80 transition-opacity" />
+                      </a>
+                    )}
+                    <button onClick={() => setDemand(null)} className="ml-1 text-muted hover:text-foreground transition-colors">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <PhotoDemandButton
+                    pairId={pair.id}
+                    slaveId={pair.slave_id}
+                    slaveName={subProfile.collar_name || subProfile.display_name || 'submissive'}
+                  />
+                )
               )}
               <button
                 onClick={handleGenerate}

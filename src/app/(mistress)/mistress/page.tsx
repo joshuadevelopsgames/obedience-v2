@@ -56,6 +56,18 @@ export default async function MistressPage() {
         .limit(5)
     : { data: [] };
 
+  // Get active photo demand (pending, or fulfilled so mistress can see the response)
+  const { data: activeDemand } = pair
+    ? await supabase
+        .from('photo_demands')
+        .select('*')
+        .eq('pair_id', pair.id)
+        .in('status', ['pending', 'fulfilled'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+    : { data: null };
+
   // Get recent mood
   const { data: recentMood } = pair
     ? await supabase
@@ -75,6 +87,7 @@ export default async function MistressPage() {
       tasks={tasks || []}
       suggestions={suggestions || []}
       recentMood={recentMood || []}
+      activeDemand={activeDemand ?? null}
     />
   );
 }
