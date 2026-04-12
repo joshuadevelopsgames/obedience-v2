@@ -198,8 +198,10 @@ Return ONLY a JSON array with this exact structure:
       );
     }
 
+    // xAI json_object mode wraps arrays in an object — unwrap it
     if (!Array.isArray(tasksData)) {
-      tasksData = [tasksData];
+      const firstArray = Object.values(tasksData).find(Array.isArray);
+      tasksData = firstArray || [tasksData];
     }
 
     // Insert tasks using admin client

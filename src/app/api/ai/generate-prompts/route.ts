@@ -209,8 +209,10 @@ Return ONLY a JSON array with this exact structure:
     throw new Error('Failed to parse AI response');
   }
 
+  // xAI json_object mode wraps arrays in an object — unwrap it
   if (!Array.isArray(promptsData)) {
-    promptsData = [promptsData];
+    const firstArray = Object.values(promptsData).find(Array.isArray);
+    promptsData = firstArray || [promptsData];
   }
 
   // Log to ai_generations (prompts are returned to the UI, not inserted as entries yet)
@@ -390,8 +392,10 @@ Return ONLY a JSON array with this exact structure:
     throw new Error('Failed to parse AI response');
   }
 
+  // xAI json_object mode wraps arrays in an object — unwrap it
   if (!Array.isArray(aftercareData)) {
-    aftercareData = [aftercareData];
+    const firstArray = Object.values(aftercareData).find(Array.isArray);
+    aftercareData = firstArray || [aftercareData];
   }
 
   // Log to ai_generations (aftercare is mostly for display, not stored in separate table)

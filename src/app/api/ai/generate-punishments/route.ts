@@ -193,8 +193,10 @@ Return ONLY a JSON array with this exact structure:
       );
     }
 
+    // xAI json_object mode wraps arrays in an object — unwrap it
     if (!Array.isArray(punishmentsData)) {
-      punishmentsData = [punishmentsData];
+      const firstArray = Object.values(punishmentsData).find(Array.isArray);
+      punishmentsData = firstArray || [punishmentsData];
     }
 
     // Insert punishments using admin client
