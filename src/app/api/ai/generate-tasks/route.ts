@@ -99,6 +99,25 @@ export async function POST(req: Request) {
       .eq('pair_id', pairId)
       .eq('user_id', pair.slave_id);
 
+    // Fetch kinks for both parties
+    const { data: mistressKinkRows } = await supabase
+      .from('profile_kinks')
+      .select('kinks(name)')
+      .eq('profile_id', pair.mistress_id);
+
+    const { data: slaveKinkRows } = await supabase
+      .from('profile_kinks')
+      .select('kinks(name)')
+      .eq('profile_id', pair.slave_id);
+
+    const mistressKinkNames = new Set(
+      (mistressKinkRows || []).map((r: any) => r.kinks?.name).filter(Boolean)
+    );
+    const slaveKinkNames = (slaveKinkRows || [])
+      .map((r: any) => r.kinks?.name)
+      .filter(Boolean) as string[];
+    const sharedKinks = slaveKinkNames.filter((n) => mistressKinkNames.has(n));
+
     // Calculate level bonus
     const levelBonus = slaveProfile?.level ? Math.floor(slaveProfile.level / 5) : 0;
 
@@ -121,6 +140,12 @@ export async function POST(req: Request) {
 
     const tonePreference = mistressProfile?.tone_preference || 'nurturing';
 
+    const kinkLine = sharedKinks.length > 0
+      ? `Shared kink interests (both parties selected — use as creative inspiration): ${sharedKinks.join(', ')}`
+      : slaveKinkNames.length > 0
+        ? `Submissive's kink interests: ${slaveKinkNames.join(', ')}`
+        : '';
+
     let prompt = `You are a dominant mistress designing tasks for your submissive slave in a gamified D/s relationship management app.
 
 Submissive's Profile:
@@ -133,8 +158,8 @@ Tone: ${tonePreference}
 Hard Limits (NEVER include these): ${hardLimits}
 Soft Limits (be cautious): ${softLimits}
 Recently Completed Tasks: ${recentTaskNames}
-
-${pair.safe_word_state === 'yellow' ? 'IMPORTANT: Safe word is YELLOW. Generate only gentle, light tasks that are confidence-building and enjoyable.' : ''}
+${kinkLine ? `\n${kinkLine}` : ''}
+${pair.safe_word_state === 'yellow' ? '\nIMPORTANT: Safe word is YELLOW. Generate only gentle, light tasks that are confidence-building and enjoyable.' : ''}
 
 Generate 3-5 tasks that:
 1. Avoid repeating recent tasks
@@ -142,6 +167,7 @@ Generate 3-5 tasks that:
 3. Vary across categories: service, obedience, training, self_care, creative, endurance, protocol
 4. Match the mistress's ${tonePreference} tone
 5. Consider the submissive's current mood and level
+6. Where relevant, weave kink interests into task themes creatively and specifically
 
 Return ONLY a JSON array with this exact structure:
 [

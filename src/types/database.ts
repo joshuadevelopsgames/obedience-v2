@@ -181,6 +181,25 @@ export interface Achievement {
   condition: Record<string, unknown> | null
 }
 
+export type KinkCategory = 'restraint' | 'impact' | 'power_exchange' | 'roleplay' | 'fetish' | 'other' | 'fluid' | 'extreme'
+
+export interface Kink {
+  id: string
+  name: string
+  description: string | null
+  category: KinkCategory
+  is_custom: boolean
+  created_by: string | null
+  created_at: string
+}
+
+export interface ProfileKink {
+  id: string
+  profile_id: string
+  kink_id: string
+  created_at: string
+}
+
 export interface Notification {
   id: string
   user_id: string

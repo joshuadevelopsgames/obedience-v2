@@ -4,9 +4,7 @@ import { SettingsView } from "@/components/mistress/SettingsView";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -17,7 +15,6 @@ export default async function SettingsPage() {
 
   if (!profile || profile.role !== "mistress") redirect("/dashboard");
 
-  // Get the pair
   const { data: pair } = await supabase
     .from("pairs")
     .select("*")
@@ -25,27 +22,19 @@ export default async function SettingsPage() {
     .eq("status", "active")
     .single();
 
-  // Fetch sub profile if paired
   let subProfile = null;
   if (pair) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", pair.slave_id)
-      .single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", pair.slave_id).single();
     subProfile = data;
   }
 
-  // Fetch contract
   const { data: contract } = pair
-    ? await supabase
-        .from("contracts")
-        .select("*")
-        .eq("pair_id", pair.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single()
+    ? await supabase.from("contracts").select("*").eq("pair_id", pair.id).order("created_at", { ascending: false }).limit(1).single()
     : { data: null };
+
+  // Fetch kink library + profile selections
+  const { data: allKinks }       = await supabase.from("kinks").select("*").order("category").order("name");
+  const { data: profileKinks }   = await supabase.from("profile_kinks").select("kink_id").eq("profile_id", user.id);
 
   return (
     <SettingsView
@@ -54,6 +43,8 @@ export default async function SettingsPage() {
       subProfile={subProfile}
       contract={contract}
       userId={user.id}
+      allKinks={allKinks || []}
+      selectedKinkIds={(profileKinks || []).map((pk: any) => pk.kink_id)}
     />
   );
 }

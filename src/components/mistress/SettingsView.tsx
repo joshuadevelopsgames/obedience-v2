@@ -10,11 +10,13 @@ import {
   Zap,
   Shield,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import type { Profile, Pair, Contract, TonePreference, AutopilotMode } from "@/types/database";
+import { KinkLibrary } from "@/components/shared/KinkLibrary";
+import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink } from "@/types/database";
 
 interface Props {
   profile: Profile;
@@ -22,6 +24,8 @@ interface Props {
   subProfile: Profile | null;
   contract: Contract | null;
   userId: string;
+  allKinks: Kink[];
+  selectedKinkIds: string[];
 }
 
 const toneDescriptions: Record<TonePreference, string> = {
@@ -37,6 +41,8 @@ export function SettingsView({
   subProfile,
   contract,
   userId,
+  allKinks,
+  selectedKinkIds,
 }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [title, setTitle] = useState(profile.title || "");
@@ -349,6 +355,22 @@ export function SettingsView({
           </button>
         </div>
       )}
+
+      {/* Kink Library */}
+      <div className="bg-surface-low rounded-xl border border-outline-variant/10 p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles size={14} className="text-primary" />
+          <h2 className="text-xs font-headline font-bold tracking-widest uppercase">Kink Library</h2>
+        </div>
+        <p className="text-xs text-muted mb-5 leading-relaxed">
+          Select kinks you're open to exploring. Grok reads both your list and your operative's to generate relevant, personalised punishments and tasks — nothing outside what you've both indicated.
+        </p>
+        <KinkLibrary
+          profileId={userId}
+          allKinks={allKinks}
+          selectedKinkIds={selectedKinkIds}
+        />
+      </div>
 
       {/* Unpair Confirm Modal */}
       {showUnpairConfirm && (

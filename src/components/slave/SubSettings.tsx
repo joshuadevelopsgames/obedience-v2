@@ -10,21 +10,25 @@ import {
   Shield,
   Copy,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import type { Profile, Pair, Contract, MoodCheckin } from "@/types/database";
+import { KinkLibrary } from "@/components/shared/KinkLibrary";
+import type { Profile, Pair, Contract, MoodCheckin, Kink } from "@/types/database";
 
 interface Props {
   profile: Profile;
   pair: Pair | null;
   contract: Contract | null;
   recentMood: MoodCheckin[];
+  allKinks: Kink[];
+  selectedKinkIds: string[];
 }
 
-export function SubSettings({ profile, pair, contract, recentMood }: Props) {
+export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
   const [saving, setSaving] = useState(false);
@@ -318,6 +322,19 @@ export function SubSettings({ profile, pair, contract, recentMood }: Props) {
           </div>
         </SectionCard>
       )}
+
+      {/* Kink Library */}
+      <SectionCard>
+        <SectionHeading icon={<Sparkles size={14} />}>Kink Library</SectionHeading>
+        <p className="text-xs text-muted mb-5 leading-relaxed -mt-3">
+          Select kinks you're open to. Your list is private — only Grok reads it alongside your Mistress's selections to generate relevant content for your dynamic.
+        </p>
+        <KinkLibrary
+          profileId={profile.id}
+          allKinks={allKinks}
+          selectedKinkIds={selectedKinkIds}
+        />
+      </SectionCard>
 
       {/* Mood History */}
       {recentMood.length > 0 && (

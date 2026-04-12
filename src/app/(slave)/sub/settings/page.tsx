@@ -4,9 +4,7 @@ import { SubSettings } from "@/components/slave/SubSettings";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -17,7 +15,6 @@ export default async function SettingsPage() {
 
   if (!profile) redirect("/dashboard");
 
-  // Get the pair
   const { data: pair } = await supabase
     .from("pairs")
     .select("*")
@@ -25,27 +22,17 @@ export default async function SettingsPage() {
     .eq("status", "active")
     .single();
 
-  // Get contract with limits
   const { data: contract } = pair
-    ? await supabase
-        .from("contracts")
-        .select("*")
-        .eq("pair_id", pair.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single()
+    ? await supabase.from("contracts").select("*").eq("pair_id", pair.id).order("created_at", { ascending: false }).limit(1).single()
     : { data: null };
 
-  // Get recent mood check-ins
   const { data: recentMood } = pair
-    ? await supabase
-        .from("mood_checkins")
-        .select("*")
-        .eq("pair_id", pair.id)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(10)
+    ? await supabase.from("mood_checkins").select("*").eq("pair_id", pair.id).eq("user_id", user.id).order("created_at", { ascending: false }).limit(10)
     : { data: [] };
+
+  // Fetch kink library + profile selections
+  const { data: allKinks }     = await supabase.from("kinks").select("*").order("category").order("name");
+  const { data: profileKinks } = await supabase.from("profile_kinks").select("kink_id").eq("profile_id", user.id);
 
   return (
     <SubSettings
@@ -53,6 +40,8 @@ export default async function SettingsPage() {
       pair={pair}
       contract={contract}
       recentMood={recentMood || []}
+      allKinks={allKinks || []}
+      selectedKinkIds={(profileKinks || []).map((pk: any) => pk.kink_id)}
     />
   );
 }

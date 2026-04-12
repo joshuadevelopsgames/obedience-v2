@@ -87,6 +87,29 @@ export async function POST(req: Request) {
       .order('created_at', { ascending: false })
       .limit(5);
 
+    // Fetch kinks for both mistress and slave
+    const { data: mistressKinkRows } = await supabase
+      .from('profile_kinks')
+      .select('kinks(name, category)')
+      .eq('profile_id', pair.mistress_id);
+
+    const { data: slaveKinkRows } = await supabase
+      .from('profile_kinks')
+      .select('kinks(name, category)')
+      .eq('profile_id', pair.slave_id);
+
+    // Find the intersection (kinks both have selected) — use those for AI
+    const mistressKinkNames = new Set(
+      (mistressKinkRows || []).map((r: any) => r.kinks?.name).filter(Boolean)
+    );
+    const slaveKinkNames = (slaveKinkRows || [])
+      .map((r: any) => r.kinks?.name)
+      .filter(Boolean);
+
+    const sharedKinks = slaveKinkNames.filter((n: string) => mistressKinkNames.has(n));
+    const allMistressKinks = Array.from(mistressKinkNames);
+    const allSlaveKinks = slaveKinkNames;
+
     let taskContext = '';
     if (taskId) {
       const { data: task } = await supabase
@@ -118,6 +141,12 @@ export async function POST(req: Request) {
 
     const tonePreference = mistressProfile?.tone_preference || 'nurturing';
 
+    const kinkContext = sharedKinks.length > 0
+      ? `Shared kink interests (both parties selected these — safe to use as inspiration): ${sharedKinks.join(', ')}`
+      : allSlaveKinks.length > 0
+        ? `Submissive's selected kinks (use as inspiration where limits allow): ${allSlaveKinks.join(', ')}\nMistress's selected kinks: ${allMistressKinks.join(', ') || 'None specified'}`
+        : '';
+
     let prompt = `You are a dominant mistress designing punishments for your submissive slave in a gamified D/s relationship management app.
 
 Submissive's Profile:
@@ -128,18 +157,21 @@ Tone: ${tonePreference}
 Hard Limits (NEVER include these in punishments): ${hardLimits}
 Soft Limits (be very cautious): ${softLimits}
 
+${kinkContext ? `Kink Context:\n${kinkContext}\n` : ''}
 Recent Behavior:
 ${recentBehaviorText}
 
 ${taskContext}${reason ? `Additional Context: ${reason}\n` : ''}
 
 Generate 2-3 punishment suggestions that:
-1. ABSOLUTELY RESPECT hard limits - never suggest anything involving hard limits
-2. Consider soft limits carefully - can suggest if appropriate
+1. ABSOLUTELY RESPECT hard limits — never suggest anything involving hard limits
+2. Consider soft limits carefully
 3. Match the mistress's ${tonePreference} tone
 4. Are proportionate and constructive
-5. Include both mental and physical elements when appropriate
-6. Vary in severity (1-5 scale)
+5. Draw creatively from the listed kink interests where relevant and appropriate
+6. Include both mental and physical elements when appropriate
+7. Vary in severity (1-5 scale)
+8. Are specific and vivid, not generic — reference the kink context where suitable
 
 Return ONLY a JSON array with this exact structure:
 [
