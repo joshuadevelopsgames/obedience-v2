@@ -14,6 +14,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ProofUpload } from "@/components/shared/ProofUpload";
 import type { Profile, Pair, Task, Ritual } from "@/types/database";
 
 interface Props {
@@ -49,8 +50,6 @@ export function SubDashboard({
   rituals,
 }: Props) {
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
-  const [proofText, setProofText] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -79,32 +78,6 @@ export function SubDashboard({
       .eq("id", task.id);
     toast.success("Task started!");
     router.refresh();
-  };
-
-  const handleSubmitProof = async (task: Task) => {
-    if (!proofText.trim()) return;
-    setSubmitting(true);
-
-    const { error } = await supabase.from("proofs").insert({
-      task_id: task.id,
-      submitted_by: profile.id,
-      proof_type: "text",
-      text_content: proofText,
-    });
-
-    if (!error) {
-      await supabase
-        .from("tasks")
-        .update({ status: "proof_submitted" })
-        .eq("id", task.id);
-      setProofText("");
-      setExpandedTask(null);
-      toast.success("Proof submitted for review!");
-      router.refresh();
-    } else {
-      toast.error("Failed to submit proof");
-    }
-    setSubmitting(false);
   };
 
   const triggerSafeWord = async (level: "yellow" | "red") => {
@@ -316,43 +289,18 @@ export function SubDashboard({
                 {expandedTask === task.id && (
                   <div className="border-t border-border px-4 py-3 bg-background/50">
                     <p className="text-xs text-muted mb-2">
-                      Submit your proof ({task.proof_type})
+                       Submit your proof ({task.proof_type})
                     </p>
-                    {task.proof_type === "photo" ? (
-                      <button className="flex items-center gap-2 rounded-lg border border-dashed border-border px-4 py-6 w-full text-sm text-muted hover:border-accent hover:text-accent transition-colors">
-                        <Camera size={16} />
-                        Upload Photo
-                      </button>
-                    ) : (
-                      <div className="space-y-2">
-                        <textarea
-                          value={proofText}
-                          onChange={(e) => setProofText(e.target.value)}
-                          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder-muted/50 outline-none focus:border-accent resize-none"
-                          rows={3}
-                          placeholder="Describe how you completed this task..."
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleSubmitProof(task)}
-                            disabled={!proofText.trim() || submitting}
-                            className="flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-medium text-background hover:bg-success/80 disabled:opacity-50"
-                          >
-                            <FileText size={12} />
-                            Submit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setExpandedTask(null);
-                              setProofText("");
-                            }}
-                            className="rounded-lg px-3 py-1.5 text-xs text-muted hover:text-foreground"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    <ProofUpload
+                      taskId={task.id}
+                      proofType={task.proof_type as any}
+                      userId={profile.id}
+                      onComplete={() => {
+                        setExpandedTask(null);
+                        router.refresh();
+                      }}
+                      onCancel={() => setExpandedTask(null)}
+                    />
                   </div>
                 )}
               </div>

@@ -12,6 +12,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ProofUpload } from "@/components/shared/ProofUpload";
 import type { Profile, Pair, Task, Proof } from "@/types/database";
 
 interface Props {
@@ -48,8 +49,6 @@ export function TaskHistory({
 }: Props) {
   const [filter, setFilter] = useState<"all" | "active" | "pending" | "completed" | "rejected">("all");
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
-  const [proofText, setProofText] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -69,36 +68,6 @@ export function TaskHistory({
       .eq("id", task.id);
     toast.success("Task started!");
     router.refresh();
-  };
-
-  const handleSubmitProof = async (task: Task) => {
-    if (!proofText.trim()) {
-      toast.error("Please enter proof text");
-      return;
-    }
-    setSubmitting(true);
-
-    const { error } = await supabase.from("proofs").insert({
-      task_id: task.id,
-      submitted_by: profile.id,
-      proof_type: task.proof_type || "text",
-      text_content: proofText,
-      status: "pending",
-    });
-
-    if (!error) {
-      await supabase
-        .from("tasks")
-        .update({ status: "proof_submitted" })
-        .eq("id", task.id);
-      setProofText("");
-      setExpandedTask(null);
-      toast.success("Proof submitted for review!");
-      router.refresh();
-    } else {
-      toast.error("Failed to submit proof");
-    }
-    setSubmitting(false);
   };
 
   const taskProof = (taskId: string) => proofs.find((p) => p.task_id === taskId);
@@ -228,32 +197,32 @@ export function TaskHistory({
 
                     {/* Proof submission */}
                     {["assigned", "in_progress"].includes(task.status) && (
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-muted">Submit Proof</label>
-                        <textarea
-                          value={proofText}
-                          onChange={(e) => setProofText(e.target.value)}
-                          placeholder="Describe what you completed..."
-                          className="w-full rounded-lg bg-background border border-border p-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent"
-                          rows={3}
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleSubmitProof(task)}
-                            disabled={submitting || !proofText.trim()}
-                            className="flex-1 rounded-lg bg-accent px-3 py-2 text-xs font-medium text-black hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                          >
-                            {submitting ? "Submitting..." : "Submit Proof"}
-                          </button>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-muted">
+                            Submit Proof ({task.proof_type})
+                          </label>
                           {task.status === "assigned" && (
                             <button
                               onClick={() => handleStartTask(task)}
-                              className="flex-1 rounded-lg bg-purple/10 px-3 py-2 text-xs font-medium text-purple hover:bg-purple/20 transition-colors"
+                              className="rounded-lg bg-purple/10 px-3 py-1.5 text-xs font-medium text-purple hover:bg-purple/20 transition-colors"
                             >
-                              Start Task
+                              Start Task First
                             </button>
                           )}
                         </div>
+                        {task.status === "in_progress" && (
+                          <ProofUpload
+                            taskId={task.id}
+                            proofType={(task.proof_type as any) || "text"}
+                            userId={profile.id}
+                            onComplete={() => {
+                              setExpandedTask(null);
+                              router.refresh();
+                            }}
+                            onCancel={() => setExpandedTask(null)}
+                          />
+                        )}
                       </div>
                     )}
 

@@ -23,9 +23,40 @@ export default function LoginPage() {
           ? { email: "demo_mistress@taskflow.local", password: "Demo1234!" }
           : { email: "demo_slave@taskflow.local", password: "Demo1234!" };
 
-      const { error } = await supabase.auth.signInWithPassword(credentials);
+      let { error } = await supabase.auth.signInWithPassword(credentials);
+
+      // If the user doesn't exist, try to sign them up
+      if (error && error.message.includes("Invalid login credentials")) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: credentials.email,
+          password: credentials.password,
+          options: {
+            data: {
+              role: role,
+              display_name: role === "mistress" ? "Demo Mistress" : "Demo Slave"
+            }
+          }
+        });
+
+        if (!signUpError) {
+          // Attempt to log in again after signing up
+          const { error: loginError } = await supabase.auth.signInWithPassword(credentials);
+          error = loginError;
+        } else {
+          error = signUpError;
+        }
+      }
+
       if (error) {
-        setError("Demo login failed. Please try again.");
+        if (error.message.includes("Email not confirmed")) {
+          setError("Please disable 'Confirm email' in Supabase Auth -> Providers.");
+        } else {
+          setError(
+            error.message === "Invalid login credentials"
+              ? "Demo login failed. Users might not be seeded."
+              : error.message
+          );
+        }
         setDemoLoading(null);
       } else {
         window.location.href = "/dashboard";
