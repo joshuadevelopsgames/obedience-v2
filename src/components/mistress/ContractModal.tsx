@@ -51,6 +51,12 @@ export function ContractModal({ pairId, slaveName, onClose }: Props) {
     generateContract();
   }, []);
 
+  // Lock body scroll on mobile while modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const generateContract = async () => {
     setGenerating(true);
     try {
@@ -112,7 +118,7 @@ export function ContractModal({ pairId, slaveName, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm touch-none">
       <div className="bg-surface-low border border-outline-variant/20 rounded-t-2xl sm:rounded-2xl w-full max-w-xl mx-0 sm:mx-4 flex flex-col max-h-[92vh] overflow-hidden">
 
         {/* Header */}
@@ -184,7 +190,7 @@ export function ContractModal({ pairId, slaveName, onClose }: Props) {
             </div>
 
             {/* Tab content */}
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto overscroll-contain touch-auto p-5">
 
               {/* Expectations */}
               {tab === 'expectations' && (
