@@ -25,6 +25,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PairSwitcher } from "@/components/slave/PairSwitcher";
+import { useVersionCheck } from "@/hooks/useVersionCheck";
 
 interface PairSwitcherData {
   pairs: { pairId: string; mistressName: string }[];
@@ -76,6 +77,7 @@ const slaveMobileNav = [
 export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  useVersionCheck();
   const supabase = createClient();
   const isMistress = profile.role === "mistress";
   const nav = isMistress ? mistressNav : slaveNav;
