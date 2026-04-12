@@ -240,6 +240,17 @@ export function MessagesView({ currentProfile, pairsWithPartners, initialMessage
   const supabase = createClient();
 
   const [selectedPairId, setSelectedPairId] = useState<string | null>(pairsWithPartners[0]?.pair.id ?? null);
+
+  // Mark all unread message notifications as read when the user opens the messages page
+  useEffect(() => {
+    supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", currentProfile.id)
+      .eq("type", "message")
+      .eq("read", false)
+      .then(() => {});
+  }, [currentProfile.id, supabase]);
   const [pairMessages, setPairMessages] = useState<Record<string, LocalMessage[]>>(() => {
     const first = pairsWithPartners[0]?.pair.id;
     if (!first) return {};

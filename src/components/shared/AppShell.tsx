@@ -16,7 +16,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   LogOut,
-  Bell,
   Lock,
   HelpCircle,
   Terminal,
@@ -26,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PairSwitcher } from "@/components/slave/PairSwitcher";
 import { useVersionCheck } from "@/hooks/useVersionCheck";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 interface PairSwitcherData {
   pairs: { pairId: string; mistressName: string }[];
@@ -159,9 +159,7 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <button className="text-zinc-500 hover:text-pink transition-colors duration-300">
-            <Bell size={20} />
-          </button>
+          <NotificationBell userId={profile.id} isMistress={isMistress} />
           {/* Mobile-only logout */}
           <button
             onClick={handleLogout}
