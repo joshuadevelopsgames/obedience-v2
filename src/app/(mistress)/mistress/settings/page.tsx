@@ -42,6 +42,11 @@ export default async function SettingsPage() {
     ? await supabase.from("profile_limits").select("limit_id").eq("profile_id", user.id).eq("pair_id", pair.id)
     : { data: null };
 
+  // Fetch rewards for this pair
+  const { data: rewards } = pair
+    ? await supabase.from("rewards").select("*").eq("pair_id", pair.id).order("created_at", { ascending: false })
+    : { data: null };
+
   return (
     <SettingsView
       profile={profile}
@@ -54,6 +59,7 @@ export default async function SettingsPage() {
       allLimits={allLimits || []}
       selectedLimitIds={(profileLimits || []).map((pl: any) => pl.limit_id)}
       pairId={pair?.id}
+      rewards={rewards || []}
     />
   );
 }

@@ -55,7 +55,7 @@ export default function LoginPage() {
             <span className="text-gradient">PROTOCOL</span>
           </h1>
           <p className="text-muted text-sm tracking-wide">
-            Authenticate to access the void
+            Enter your credentials to begin
           </p>
         </div>
 

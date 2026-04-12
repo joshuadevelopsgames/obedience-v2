@@ -140,12 +140,29 @@ export function MistressDashboard({
 
   return (
     <div className="flex flex-col gap-8 lg:gap-10">
+      {/* ── Welcome Header ────────────────────────── */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-primary text-xs font-headline tracking-[0.2em] font-bold">
+            DOMINANT STATUS: ACTIVE
+          </span>
+        </div>
+        <h1 className="text-5xl md:text-6xl font-headline font-bold leading-[0.9] tracking-tighter mb-3">
+          COMMAND<br />
+          <span className="text-gradient">CENTRE</span>
+        </h1>
+        <p className="text-muted max-w-md text-lg leading-relaxed">
+          {profile.display_name || profile.title || "Dominant"} — your authority shapes everything.
+          Guide, push, and watch your submissive grow under your hand.
+        </p>
+      </div>
+
       {/* ── Hero Section: 12-col grid ─────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Operative Rank Card (5 cols) */}
+        {/* Submissive Rank Card (5 cols) */}
         <div className="lg:col-span-5 bg-surface-container p-8 rounded-2xl border border-white/5 glow-purple">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="font-headline text-xl font-bold tracking-tight">OPERATIVE RANK</h2>
+            <h2 className="font-headline text-xl font-bold tracking-tight">SUBMISSIVE RANK</h2>
             {subProfile && (
               <span className="text-xs font-headline text-primary bg-primary/10 px-3 py-1 rounded-full">
                 LEVEL {String(subLevel).padStart(2, "0")}
@@ -211,7 +228,7 @@ export function MistressDashboard({
                 <PhotoDemandButton
                   pairId={pair.id}
                   slaveId={pair.slave_id}
-                  slaveName={subProfile.collar_name || subProfile.display_name || 'operative'}
+                  slaveName={subProfile.collar_name || subProfile.display_name || 'submissive'}
                 />
               )}
               <button
@@ -408,7 +425,7 @@ export function MistressDashboard({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent)]" />
           <h2 className="relative text-2xl font-headline font-bold text-primary mb-3">Awaiting Pair Link</h2>
           <p className="relative text-muted max-w-md mx-auto">
-            Share your protocol code with your operative to establish the connection.
+            Share your protocol code with your submissive to establish the connection.
           </p>
         </div>
       )}

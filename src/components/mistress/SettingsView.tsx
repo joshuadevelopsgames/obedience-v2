@@ -11,6 +11,7 @@ import {
   Shield,
   Users,
   Sparkles,
+  Gift,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -18,7 +19,8 @@ import { useRouter } from "next/navigation";
 import { KinkLibrary } from "@/components/shared/KinkLibrary";
 import LimitsLibrary from "@/components/shared/LimitsLibrary";
 import { ContractModal } from "@/components/mistress/ContractModal";
-import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink } from "@/types/database";
+import { RewardsManager } from "@/components/mistress/RewardsManager";
+import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink, Reward } from "@/types/database";
 
 interface Limit {
   id: string;
@@ -40,6 +42,7 @@ interface Props {
   allLimits: Limit[];
   selectedLimitIds: string[];
   pairId?: string;
+  rewards: Reward[];
 }
 
 const toneDescriptions: Record<TonePreference, string> = {
@@ -60,6 +63,7 @@ export function SettingsView({
   allLimits,
   selectedLimitIds,
   pairId,
+  rewards,
 }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [title, setTitle] = useState(profile.title || "");
@@ -248,7 +252,7 @@ export function SettingsView({
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <SectionLabel>Operative</SectionLabel>
+                <SectionLabel>Submissive</SectionLabel>
                 <p className="font-headline font-bold text-sm">{subProfile.collar_name || subProfile.display_name}</p>
                 <p className="text-xs text-muted mt-0.5">Level {subProfile.level}</p>
               </div>
@@ -385,6 +389,20 @@ export function SettingsView({
           slaveName={subProfile?.collar_name || subProfile?.display_name || "operative"}
           onClose={() => setShowContractModal(false)}
         />
+      )}
+
+      {/* Rewards Manager */}
+      {pair && pairId && (
+        <div className="bg-surface-low rounded-xl border border-outline-variant/10 p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Gift size={14} className="text-primary" />
+            <h2 className="text-xs font-headline font-bold tracking-widest uppercase">Rewards Shop</h2>
+          </div>
+          <p className="text-xs text-muted mb-5 leading-relaxed">
+            Create rewards your submissive can purchase with earned XP. Toggle visibility to hide rewards temporarily without deleting them.
+          </p>
+          <RewardsManager pairId={pairId} rewards={rewards} />
+        </div>
       )}
 
       {/* Kink Library */}

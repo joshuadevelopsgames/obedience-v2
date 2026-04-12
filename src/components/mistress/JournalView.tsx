@@ -194,7 +194,7 @@ export function JournalView({
                   <div className="border-t border-white/5 bg-surface-container px-5 py-4">
                     {editingEntryId === entry.id ? (
                       <div className="space-y-3">
-                        <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted">Your Commander Note</p>
+                        <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted">Your Dominant Note</p>
                         <textarea
                           value={editNote}
                           onChange={(e) => setEditNote(e.target.value)}

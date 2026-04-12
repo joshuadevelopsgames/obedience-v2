@@ -278,7 +278,7 @@ export function TaskHistory({
                           Awaiting Transmission...
                         </p>
                         <p className="text-sm text-muted mt-1">
-                          Your Commander will review your submission shortly.
+                          Your Dominant will review your submission shortly.
                         </p>
                       </div>
                     )}

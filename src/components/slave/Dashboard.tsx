@@ -99,7 +99,7 @@ export function SubDashboard({
 
     toast(
       level === "yellow"
-        ? "Yellow — slowing down. Your Commander has been notified."
+        ? "Yellow — slowing down. Your Dominant has been notified."
         : "Red — full stop. All protocols paused.",
       { duration: 5000 }
     );
@@ -113,7 +113,7 @@ export function SubDashboard({
         <div className="lg:col-span-7 space-y-6">
           <div className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg">
             <span className="text-primary text-xs font-headline tracking-[0.2em] font-bold">
-              OPERATIVE STATUS: ACTIVE
+              SUBMISSIVE STATUS: ACTIVE
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl lg:text-8xl font-headline font-bold leading-[0.9] tracking-tighter">
@@ -121,8 +121,8 @@ export function SubDashboard({
             <span className="text-gradient">PROTOCOL</span>
           </h2>
           <p className="text-muted max-w-md text-lg leading-relaxed">
-            {profile.collar_name || profile.display_name} — {tier.name} operative.
-            Your progression is the only metric that matters.
+            {profile.collar_name || profile.display_name} — {tier.name} submissive.
+            Serve well. Grow deeper. Your Dominant's approval is everything.
           </p>
         </div>
         <div className="lg:col-span-5">
@@ -425,7 +425,7 @@ export function SubDashboard({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1),transparent)]" />
           <h2 className="relative text-2xl font-headline font-bold text-primary mb-3">Awaiting Connection</h2>
           <p className="relative text-muted max-w-md mx-auto">
-            Request a protocol code from your Commander or share yours from settings.
+            Request a protocol code from your Dominant or share yours from settings.
           </p>
         </div>
       )}
