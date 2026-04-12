@@ -41,7 +41,7 @@ export default async function SettingsPage() {
   // Fetch limits library + profile selections
   const { data: allLimits }      = await supabase.from("limits_library").select("*").order("category").order("name");
   const { data: profileLimits }  = pair
-    ? await supabase.from("profile_limits").select("limit_id").eq("profile_id", user.id).eq("pair_id", pair.id)
+    ? await supabase.from("profile_limits").select("limit_id, category").eq("profile_id", user.id).eq("pair_id", pair.id)
     : { data: null };
 
   // Fetch rewards for this pair
@@ -59,7 +59,7 @@ export default async function SettingsPage() {
       allKinks={allKinks || []}
       selectedKinkIds={(profileKinks || []).map((pk: any) => pk.kink_id)}
       allLimits={allLimits || []}
-      selectedLimitIds={(profileLimits || []).map((pl: any) => pl.limit_id)}
+      selectedLimits={(profileLimits || []).map((pl: any) => ({ limit_id: pl.limit_id, category: pl.category as 'hard' | 'soft' }))}
       pairId={pair?.id}
       rewards={rewards || []}
     />

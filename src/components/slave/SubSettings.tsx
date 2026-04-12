@@ -39,7 +39,7 @@ interface Props {
   allKinks: Kink[];
   selectedKinkIds: string[];
   allLimits: Limit[];
-  selectedLimitIds: string[];
+  selectedLimits: { limit_id: string; category: 'hard' | 'soft' }[];
   pairId?: string;
 }
 
@@ -61,7 +61,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">{children}</p>;
 }
 
-export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds, allLimits, selectedLimitIds, pairId }: Props) {
+export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds, allLimits, selectedLimits, pairId }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
   const [saving, setSaving] = useState(false);
@@ -406,7 +406,7 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
             profileId={profile.id}
             pairId={pairId}
             allLimits={allLimits}
-            selectedLimitIds={selectedLimitIds}
+            selectedLimits={selectedLimits}
             selectedKinkIds={selectedKinkIds}
             allKinksByName={Object.fromEntries(allKinks.map((k) => [k.name, k.id]))}
           />

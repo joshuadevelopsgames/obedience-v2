@@ -40,7 +40,7 @@ interface Props {
   allKinks: Kink[];
   selectedKinkIds: string[];
   allLimits: Limit[];
-  selectedLimitIds: string[];
+  selectedLimits: { limit_id: string; category: 'hard' | 'soft' }[];
   pairId?: string;
   rewards: Reward[];
 }
@@ -61,7 +61,7 @@ export function SettingsView({
   allKinks,
   selectedKinkIds,
   allLimits,
-  selectedLimitIds,
+  selectedLimits,
   pairId,
   rewards,
 }: Props) {
@@ -435,7 +435,7 @@ export function SettingsView({
             profileId={userId}
             pairId={pairId}
             allLimits={allLimits}
-            selectedLimitIds={selectedLimitIds}
+            selectedLimits={selectedLimits}
             selectedKinkIds={selectedKinkIds}
             allKinksByName={Object.fromEntries(allKinks.map((k) => [k.name, k.id]))}
           />

@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   title: "The Protocol",
   description: "AI-powered task management with RPG progression",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png",   sizes: "192x192", type: "image/png" },
+      { url: "/favicon.ico",    rel: "shortcut icon" },
+    ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
+  },
   appleWebApp: {
     capable: true,
     title: "The Protocol",
@@ -41,6 +50,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="The Protocol" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className="min-h-full flex flex-col">
         {children}
