@@ -54,6 +54,9 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [windowSeconds, setWindowSeconds] = useState(300);
+  const [useCustomTime, setUseCustomTime] = useState(false);
+  const [customHours, setCustomHours] = useState(0);
+  const [customMinutes, setCustomMinutes] = useState(30);
   const [loading, setLoading] = useState(false);
 
   // Punishment mode
@@ -72,6 +75,9 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
   const resetModal = () => {
     setPrompt('');
     setWindowSeconds(300);
+    setUseCustomTime(false);
+    setCustomHours(0);
+    setCustomMinutes(30);
     setPunishmentMode('auto');
     setCustomTitle('');
     setCustomDescription('');
@@ -220,13 +226,13 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
                 <Clock size={11} />
                 Time limit
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {WINDOWS.map((w) => (
                   <button
                     key={w.seconds}
-                    onClick={() => setWindowSeconds(w.seconds)}
+                    onClick={() => { setWindowSeconds(w.seconds); setUseCustomTime(false); }}
                     className={`py-2 rounded-lg text-xs font-headline font-bold tracking-widest uppercase transition-colors ${
-                      windowSeconds === w.seconds
+                      !useCustomTime && windowSeconds === w.seconds
                         ? 'bg-[#ff67ad] text-white'
                         : 'bg-surface-container border border-outline-variant/20 text-muted hover:text-foreground'
                     }`}
@@ -234,7 +240,58 @@ export function PhotoDemandButton({ pairId, slaveId, slaveName }: PhotoDemandBut
                     {w.label}
                   </button>
                 ))}
+                <button
+                  onClick={() => setUseCustomTime(true)}
+                  className={`py-2 rounded-lg text-xs font-headline font-bold tracking-widest uppercase transition-colors ${
+                    useCustomTime
+                      ? 'bg-[#ff67ad] text-white'
+                      : 'bg-surface-container border border-outline-variant/20 text-muted hover:text-foreground'
+                  }`}
+                >
+                  Custom
+                </button>
               </div>
+              {/* Custom time inputs */}
+              {useCustomTime && (
+                <div className="flex items-center gap-3 pt-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={23}
+                      value={customHours}
+                      onChange={(e) => {
+                        const h = Math.max(0, Math.min(23, parseInt(e.target.value) || 0));
+                        setCustomHours(h);
+                        setWindowSeconds((h * 60 + customMinutes) * 60);
+                      }}
+                      className="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-sm text-center text-foreground outline-none focus:border-[#ff67ad]/40 transition-colors"
+                    />
+                    <span className="text-[10px] font-label text-muted flex-shrink-0">hrs</span>
+                  </div>
+                  <span className="text-muted font-headline font-bold">:</span>
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={customMinutes}
+                      onChange={(e) => {
+                        const m = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                        setCustomMinutes(m);
+                        setWindowSeconds((customHours * 60 + m) * 60);
+                      }}
+                      className="w-full bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-sm text-center text-foreground outline-none focus:border-[#ff67ad]/40 transition-colors"
+                    />
+                    <span className="text-[10px] font-label text-muted flex-shrink-0">min</span>
+                  </div>
+                  {(customHours > 0 || customMinutes > 0) && (
+                    <span className="text-[10px] font-headline font-bold text-[#ff67ad] flex-shrink-0">
+                      {customHours > 0 ? `${customHours}h ` : ''}{customMinutes > 0 ? `${customMinutes}m` : ''}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Punishment mode */}
