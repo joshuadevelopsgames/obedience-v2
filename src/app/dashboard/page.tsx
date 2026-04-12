@@ -11,11 +11,16 @@ export default async function DashboardRedirect() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, onboarded")
+    .select("role, onboarded, must_change_password")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.onboarded) redirect("/onboard");
+  if (!profile) redirect("/login");
+
+  // Force password change if flagged
+  if (profile.must_change_password) redirect("/change-password");
+
+  if (!profile.onboarded) redirect("/onboard");
 
   if (profile.role === "mistress") {
     redirect("/mistress");

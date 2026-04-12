@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,13 +20,16 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
+    // Map username to internal email format
+    const email = `${username.toLowerCase().trim()}@taskflow.local`;
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      setError(error.message);
+      setError("Invalid username or password");
       setLoading(false);
     } else {
       router.push("/dashboard");
@@ -47,15 +50,16 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-muted mb-1.5">
-              Email
+              Username
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-accent"
-              placeholder="you@example.com"
+              placeholder="—"
               required
+              autoComplete="username"
             />
           </div>
 
@@ -69,8 +73,9 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border border-border bg-card px-3 py-2.5 pr-10 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-accent"
-                placeholder="Your password"
+                placeholder="—"
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"

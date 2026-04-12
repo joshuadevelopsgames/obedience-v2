@@ -10,7 +10,7 @@ type Role = "mistress" | "slave";
 
 export default function SignupPage() {
   const [step, setStep] = useState<"details" | "role">("details");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [role, setRole] = useState<Role | null>(null);
@@ -24,6 +24,9 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
+    // Map username to internal email format
+    const email = `${username.toLowerCase().trim()}@taskflow.local`;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -31,12 +34,17 @@ export default function SignupPage() {
         data: {
           role,
           display_name: displayName,
+          username: username.toLowerCase().trim(),
         },
       },
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes("already registered")) {
+        setError("That username is taken");
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
     } else {
       router.push("/onboard");
@@ -78,15 +86,17 @@ export default function SignupPage() {
 
             <div>
               <label className="block text-xs font-medium text-muted mb-1.5">
-                Email
+                Username
               </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
                 className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-accent"
-                placeholder="you@example.com"
+                placeholder="Choose a username"
                 required
+                autoComplete="username"
+                minLength={3}
               />
             </div>
 
@@ -102,6 +112,7 @@ export default function SignupPage() {
                 placeholder="At least 6 characters"
                 minLength={6}
                 required
+                autoComplete="new-password"
               />
             </div>
 
