@@ -8,11 +8,18 @@ const XAI_ENDPOINT = 'https://api.x.ai/v1/chat/completions';
 
 export async function POST(req: Request) {
   try {
-    const { pairId } = await req.json();
+    const { pairId, deliveryMode } = await req.json();
 
     if (!pairId) {
       return NextResponse.json(
         { error: 'pairId is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!deliveryMode || !['online', 'in_person'].includes(deliveryMode)) {
+      return NextResponse.json(
+        { error: 'deliveryMode must be "online" or "in_person"' },
         { status: 400 }
       );
     }
@@ -146,6 +153,10 @@ export async function POST(req: Request) {
         ? `Submissive's kink interests: ${slaveKinkNames.join(', ')}`
         : '';
 
+    const deliveryContext = deliveryMode === 'in_person'
+      ? 'These tasks should leverage in-person interaction. Proof types can include photos of the submissive, location check-ins, or physical verification of completion.'
+      : 'These tasks are ONLINE ONLY — no in-person interaction. Focus on digital proof types (text, checkins, solo photos). Avoid tasks requiring the mistress to be physically present.';
+
     let prompt = `You are a dominant mistress designing tasks for your submissive slave in a gamified D/s relationship management app.
 
 Submissive's Profile:
@@ -161,6 +172,9 @@ Recently Completed Tasks: ${recentTaskNames}
 ${kinkLine ? `\n${kinkLine}` : ''}
 ${pair.safe_word_state === 'yellow' ? '\nIMPORTANT: Safe word is YELLOW. Generate only gentle, light tasks that are confidence-building and enjoyable.' : ''}
 
+DELIVERY MODE: ${deliveryMode === 'in_person' ? 'IN-PERSON' : 'ONLINE ONLY'}
+${deliveryContext}
+
 Generate 3-5 tasks that:
 1. Avoid repeating recent tasks
 2. Respect hard limits absolutely
@@ -168,6 +182,7 @@ Generate 3-5 tasks that:
 4. Match the mistress's ${tonePreference} tone
 5. Consider the submissive's current mood and level
 6. Where relevant, weave kink interests into task themes creatively and specifically
+7. Are appropriate for ${deliveryMode === 'in_person' ? 'in-person interaction' : 'online-only delivery'}
 
 Return ONLY a JSON array with this exact structure:
 [
@@ -177,7 +192,8 @@ Return ONLY a JSON array with this exact structure:
     "category": "service|obedience|training|self_care|creative|endurance|protocol",
     "difficulty": 1-5,
     "xp_reward": ${levelBonus ? `${10 + levelBonus}` : '10'} + (difficulty * 10),
-    "proof_type": "photo|text|checkin"
+    "proof_type": "photo|text|checkin",
+    "delivery_mode": "${deliveryMode}"
   }
 ]`;
 
@@ -242,6 +258,7 @@ Return ONLY a JSON array with this exact structure:
       difficulty: task.difficulty,
       xp_reward: task.xp_reward,
       proof_type: task.proof_type,
+      delivery_mode: task.delivery_mode || deliveryMode,
       status: 'suggested',
       ai_generated: true,
       ai_context: { generated_at: new Date().toISOString() },

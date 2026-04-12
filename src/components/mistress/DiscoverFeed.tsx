@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Pair, Profile, Task, Punishment } from "@/types/database";
+import { DeliveryModeModal } from "@/components/mistress/DeliveryModeModal";
 
 interface Props {
   pair: Pair | null;
@@ -79,15 +80,17 @@ export function DiscoverFeed({
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Task>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [showDeliveryModeModal, setShowDeliveryModeModal] = useState(false);
 
-  const handleGenerateTasks = async () => {
+  const handleGenerateTasks = async (deliveryMode: "online" | "in_person") => {
     if (!pair) { toast.error("Not paired yet"); return; }
+    setShowDeliveryModeModal(false);
     setGeneratingTasks(true);
     try {
       const res = await fetch("/api/ai/generate-tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pairId: pair.id }),
+        body: JSON.stringify({ pairId: pair.id, deliveryMode }),
       });
       const data = await res.json();
       if (data.tasks) {
@@ -215,7 +218,7 @@ export function DiscoverFeed({
             </p>
           </div>
           <button
-            onClick={handleGenerateTasks}
+            onClick={() => setShowDeliveryModeModal(true)}
             disabled={generatingTasks}
             className="btn-gradient px-4 py-2 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-2 disabled:opacity-50"
           >
@@ -441,6 +444,14 @@ export function DiscoverFeed({
           </div>
         )}
       </section>
+
+      {/* Delivery Mode Modal */}
+      <DeliveryModeModal
+        isOpen={showDeliveryModeModal}
+        isLoading={generatingTasks}
+        onSelect={handleGenerateTasks}
+        onClose={() => setShowDeliveryModeModal(false)}
+      />
     </div>
   );
 }
