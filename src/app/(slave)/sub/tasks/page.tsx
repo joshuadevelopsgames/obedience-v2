@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { TaskHistory } from "@/components/slave/TaskHistory";
 import { PhotoDemandBanner } from "@/components/slave/PhotoDemandBanner";
+import { getSlaveActivePair } from "@/lib/slavePair";
 
 export default async function TasksPage() {
   const supabase = await createClient();
@@ -18,13 +19,8 @@ export default async function TasksPage() {
 
   if (!profile) redirect("/dashboard");
 
-  // Get the pair
-  const { data: pair } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("slave_id", user.id)
-    .eq("status", "active")
-    .single();
+  // Get the active pair (respects pair switcher cookie)
+  const pair = await getSlaveActivePair(supabase, user.id);
 
   // Get all tasks (not just active ones)
   const { data: tasks } = pair

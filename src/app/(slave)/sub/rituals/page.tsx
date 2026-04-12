@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { RitualsPage } from "@/components/slave/RitualsPage";
+import { getSlaveActivePair } from "@/lib/slavePair";
 
 export default async function RitualsPageServer() {
   const supabase = await createClient();
@@ -17,13 +18,8 @@ export default async function RitualsPageServer() {
 
   if (!profile) redirect("/dashboard");
 
-  // Get the pair
-  const { data: pair } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("slave_id", user.id)
-    .eq("status", "active")
-    .single();
+  // Get the active pair (respects pair switcher cookie)
+  const pair = await getSlaveActivePair(supabase, user.id);
 
   // Get rituals
   const { data: rituals } = pair

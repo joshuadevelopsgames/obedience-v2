@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { JournalPage } from "@/components/slave/JournalPage";
+import { getSlaveActivePair } from "@/lib/slavePair";
 
 export default async function JournalPageServer() {
   const supabase = await createClient();
@@ -17,13 +18,8 @@ export default async function JournalPageServer() {
 
   if (!profile) redirect("/dashboard");
 
-  // Get the pair
-  const { data: pair } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("slave_id", user.id)
-    .eq("status", "active")
-    .single();
+  // Get the active pair (respects pair switcher cookie)
+  const pair = await getSlaveActivePair(supabase, user.id);
 
   // Get journal entries
   const { data: entries } = pair

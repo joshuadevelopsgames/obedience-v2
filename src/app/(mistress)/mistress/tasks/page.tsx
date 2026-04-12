@@ -23,7 +23,9 @@ export default async function TasksPage() {
     .select("*")
     .eq("mistress_id", user.id)
     .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   // Fetch all tasks for the pair
   const { data: tasks } = pair

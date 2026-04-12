@@ -24,10 +24,17 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { PairSwitcher } from "@/components/slave/PairSwitcher";
+
+interface PairSwitcherData {
+  pairs: { pairId: string; mistressName: string }[];
+  activePairId: string;
+}
 
 interface AppShellProps {
   children: React.ReactNode;
   profile: Profile;
+  pairSwitcher?: PairSwitcherData;
 }
 
 const mistressNav = [
@@ -66,7 +73,7 @@ const slaveMobileNav = [
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Prefs" },
 ];
 
-export function AppShell({ children, profile }: AppShellProps) {
+export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -124,6 +131,13 @@ export function AppShell({ children, profile }: AppShellProps) {
           <span className="text-2xl font-bold tracking-tighter text-gradient font-headline">
             THE PROTOCOL
           </span>
+          {/* Pair switcher for slaves with multiple mistresses */}
+          {pairSwitcher && (
+            <PairSwitcher
+              pairs={pairSwitcher.pairs}
+              activePairId={pairSwitcher.activePairId}
+            />
+          )}
           {/* Desktop inline nav links */}
           <nav className="hidden xl:flex items-center gap-6">
             {nav.slice(0, 4).map((item) => {

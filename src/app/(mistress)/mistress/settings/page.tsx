@@ -20,7 +20,9 @@ export default async function SettingsPage() {
     .select("*")
     .eq("mistress_id", user.id)
     .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   let subProfile = null;
   if (pair) {

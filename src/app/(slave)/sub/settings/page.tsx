@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SubSettings } from "@/components/slave/SubSettings";
+import { getSlaveActivePair } from "@/lib/slavePair";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -15,12 +16,8 @@ export default async function SettingsPage() {
 
   if (!profile) redirect("/dashboard");
 
-  const { data: pair } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("slave_id", user.id)
-    .eq("status", "active")
-    .single();
+  // Get the active pair (respects pair switcher cookie)
+  const pair = await getSlaveActivePair(supabase, user.id);
 
   const { data: contract } = pair
     ? await supabase.from("contracts").select("*").eq("pair_id", pair.id).order("created_at", { ascending: false }).limit(1).single()

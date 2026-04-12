@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SubDashboard } from "@/components/slave/Dashboard";
+import { getSlaveActivePair } from "@/lib/slavePair";
 
 export default async function SubPage() {
   const supabase = await createClient();
@@ -15,13 +16,8 @@ export default async function SubPage() {
     .eq("id", user.id)
     .single();
 
-  // Get the pair
-  const { data: pair } = await supabase
-    .from("pairs")
-    .select("*")
-    .eq("slave_id", user.id)
-    .eq("status", "active")
-    .single();
+  // Get the active pair (respects pair switcher cookie)
+  const pair = await getSlaveActivePair(supabase, user.id);
 
   // Get assigned tasks
   const { data: tasks } = pair

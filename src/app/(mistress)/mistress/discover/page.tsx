@@ -23,7 +23,9 @@ export default async function DiscoverPage() {
     .select("*")
     .eq("mistress_id", user.id)
     .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   // Fetch AI-generated task suggestions (not yet approved)
   const { data: suggestions } = pair

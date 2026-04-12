@@ -23,7 +23,9 @@ export default async function JournalPage() {
     .select("*")
     .eq("mistress_id", user.id)
     .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   // Fetch journal entries
   const { data: entries } = pair
