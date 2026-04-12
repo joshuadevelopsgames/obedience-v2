@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   X,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -23,23 +24,23 @@ interface Props {
 
 const categoryColors: Record<string, string> = {
   service: "text-blue-400",
-  obedience: "text-purple",
-  training: "text-accent",
+  obedience: "text-primary",
+  training: "text-warning",
   self_care: "text-emerald-400",
-  creative: "text-pink-400",
+  creative: "text-pink",
   endurance: "text-red-400",
   protocol: "text-cyan-400",
 };
 
-const statusColors: Record<string, string> = {
-  assigned: "bg-blue-400/10 text-blue-400",
-  in_progress: "bg-accent/10 text-accent",
-  proof_submitted: "bg-yellow-400/10 text-yellow-400",
-  approved: "bg-success/10 text-success",
-  rejected: "bg-danger/10 text-danger",
-  completed: "bg-success/10 text-success",
-  expired: "bg-muted/10 text-muted",
-  suggested: "bg-muted/10 text-muted",
+const statusStyles: Record<string, string> = {
+  assigned: "text-[#00ff9d] bg-[#00ff9d]/5 border-[#00ff9d]/20",
+  in_progress: "text-primary bg-primary/5 border-primary/20",
+  proof_submitted: "text-warning bg-warning/5 border-warning/20",
+  approved: "text-success bg-success/5 border-success/20",
+  rejected: "text-[#ff3366] bg-[#ff3366]/5 border-[#ff3366]/20",
+  completed: "text-success bg-success/5 border-success/20",
+  expired: "text-zinc-500 bg-zinc-500/5 border-zinc-500/20",
+  suggested: "text-zinc-500 bg-zinc-500/5 border-zinc-500/20",
 };
 
 export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
@@ -199,35 +200,38 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
 
   if (!pair) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-        <p className="text-sm text-muted">
-          Not paired yet. Share your pair code to get started.
+      <div className="bg-surface-container-high rounded-xl p-12 text-center border border-outline-variant/5">
+        <p className="text-muted font-headline">
+          Not paired yet. Share your protocol code to get started.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Task Management</h2>
+        <div>
+          <h1 className="text-3xl font-headline font-bold tracking-tight">TASK MANAGEMENT</h1>
+          <p className="text-sm text-muted mt-1">Create and review operative directives</p>
+        </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/20 transition-colors"
+          className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-headline font-bold tracking-widest uppercase"
         >
-          <Plus size={16} />
-          Create Task
+          <Plus size={14} />
+          New Protocol
         </button>
       </div>
 
       {/* Create Form */}
       {showCreateForm && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h3 className="font-semibold">New Task</h3>
-          <form onSubmit={handleCreateTask} className="space-y-4">
+        <div className="bg-surface-container p-8 rounded-2xl border border-white/5 space-y-5">
+          <h3 className="font-headline font-bold text-lg tracking-tight">NEW PROTOCOL</h3>
+          <form onSubmit={handleCreateTask} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium mb-2">Title</label>
+              <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">Title</label>
               <input
                 type="text"
                 value={formData.title}
@@ -235,14 +239,12 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                   setFormData({ ...formData, title: e.target.value })
                 }
                 placeholder="—"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground placeholder-zinc-600 outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
+              <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) =>
@@ -250,15 +252,13 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                 }
                 placeholder="—"
                 rows={3}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground placeholder-zinc-600 outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category
-                </label>
+                <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) =>
@@ -267,7 +267,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                       category: e.target.value as any,
                     })
                   }
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
                 >
                   <option value="service">Service</option>
                   <option value="obedience">Obedience</option>
@@ -280,9 +280,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Proof Type
-                </label>
+                <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">Proof Type</label>
                 <select
                   value={formData.proof_type}
                   onChange={(e) =>
@@ -291,7 +289,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                       proof_type: e.target.value as any,
                     })
                   }
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
                 >
                   <option value="text">Text</option>
                   <option value="photo">Photo</option>
@@ -304,7 +302,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">
                   Difficulty: {formData.difficulty}
                 </label>
                 <input
@@ -318,37 +316,39 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                       difficulty: parseInt(e.target.value),
                     })
                   }
-                  className="w-full"
+                  className="w-full accent-primary"
                 />
+                <div className="flex justify-between text-[10px] text-zinc-500 font-headline mt-1">
+                  <span>{"●".repeat(formData.difficulty)}{"○".repeat(5 - formData.difficulty)}</span>
+                  <span>+{formData.difficulty * 15} XP</span>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Due Date
-                </label>
+                <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">Due Date</label>
                 <input
                   type="date"
                   value={formData.due_date}
                   onChange={(e) =>
                     setFormData({ ...formData, due_date: e.target.value })
                   }
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 rounded-lg bg-accent text-background py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-50"
+                className="btn-gradient flex-1 py-3 rounded-sm text-xs tracking-widest font-headline font-bold uppercase disabled:opacity-50"
               >
-                {submitting ? "Creating..." : "Create Task"}
+                {submitting ? "Creating..." : "Execute Protocol"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="flex-1 rounded-lg border border-border bg-card text-foreground py-2 text-sm font-medium hover:bg-card/80"
+                className="flex-1 py-3 rounded-sm bg-surface-container-high text-foreground text-xs font-headline font-bold tracking-widest uppercase hover:bg-surface-bright transition-colors"
               >
                 Cancel
               </button>
@@ -358,30 +358,29 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
+      <div className="flex gap-4">
         {(["all", "active", "pending", "completed"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+            className={`font-label text-xs font-bold uppercase tracking-widest pb-2 transition-colors ${
               activeTab === tab
-                ? "border-accent text-accent"
-                : "border-transparent text-muted hover:text-foreground"
+                ? "text-primary border-b-2 border-primary/30"
+                : "text-zinc-500 hover:text-foreground"
             }`}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}{" "}
-            <span className="text-xs ml-1">({tabCounts[tab]})</span>
+            {tab} <span className="text-[10px] ml-1 opacity-60">({tabCounts[tab]})</span>
           </button>
         ))}
       </div>
 
       {/* Task List */}
       {filteredTasks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-          <p className="text-sm text-muted">No tasks in this category.</p>
+        <div className="bg-surface-container-high rounded-xl p-12 text-center border border-outline-variant/5">
+          <p className="text-muted font-headline">No protocols in this category.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4">
           {filteredTasks.map((task) => {
             const proof = proofs.find((p) => p.task_id === task.id);
             const isExpanded = expandedProofs.includes(task.id);
@@ -389,70 +388,70 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
             return (
               <div
                 key={task.id}
-                className="rounded-xl border border-border bg-card p-4 space-y-3"
+                className="bg-surface-low rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 overflow-hidden glow-border-primary"
               >
-                {/* Task Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`text-xs font-medium ${
-                          categoryColors[task.category] || "text-muted"
-                        }`}
-                      >
-                        {task.category.replace("_", " ")}
-                      </span>
-                      <span className="text-xs text-muted">
-                        {"★".repeat(task.difficulty)}
-                        {"☆".repeat(5 - task.difficulty)}
-                      </span>
-                      <span className="text-xs text-accent">
-                        +{task.xp_reward} XP
-                      </span>
+                {/* Task Row */}
+                <div className="flex items-center justify-between p-6">
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary border border-outline-variant/10 flex-shrink-0">
+                      <Zap size={20} />
                     </div>
-                    <h4 className="font-medium text-sm">{task.title}</h4>
-                    {task.description && (
-                      <p className="text-xs text-muted mt-1">
-                        {task.description}
-                      </p>
-                    )}
-                    <div className="mt-2">
-                      <span
-                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          statusColors[task.status] ||
-                          "bg-muted/10 text-muted"
-                        }`}
-                      >
-                        {task.status.replace("_", " ")}
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-lg font-headline font-bold tracking-tight">{task.title}</h4>
+                      <div className="flex items-center gap-4 mt-1 flex-wrap">
+                        <span
+                          className={`text-xs font-headline font-medium ${
+                            categoryColors[task.category] || "text-muted"
+                          }`}
+                        >
+                          {task.category.replace("_", " ").toUpperCase()}
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                        <span className="text-[10px] text-zinc-500 font-headline">
+                          {"●".repeat(task.difficulty)}{"○".repeat(5 - task.difficulty)}
+                        </span>
+                        <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                        <span className="text-primary text-xs font-headline font-bold">
+                          +{task.xp_reward} XP
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  {task.status === "proof_submitted" && proof && (
-                    <button
-                      onClick={() =>
-                        setExpandedProofs((prev) =>
-                          prev.includes(task.id)
-                            ? prev.filter((id) => id !== task.id)
-                            : [...prev, task.id]
-                        )
-                      }
-                      className="ml-3 p-2 text-muted hover:text-foreground transition-colors"
+                  <div className="flex items-center gap-4 ml-4 flex-shrink-0">
+                    <span
+                      className={`text-[10px] font-headline font-bold tracking-[0.2em] px-3 py-1 rounded border ${
+                        statusStyles[task.status] || "text-zinc-400 bg-zinc-400/5 border-zinc-400/20"
+                      }`}
                     >
-                      {isExpanded ? (
-                        <ChevronUp size={16} />
-                      ) : (
-                        <ChevronDown size={16} />
-                      )}
-                    </button>
-                  )}
+                      {task.status.replace("_", " ").toUpperCase()}
+                    </span>
+                    {task.status === "proof_submitted" && proof && (
+                      <button
+                        onClick={() =>
+                          setExpandedProofs((prev) =>
+                            prev.includes(task.id)
+                              ? prev.filter((id) => id !== task.id)
+                              : [...prev, task.id]
+                          )
+                        }
+                        className="p-2 text-zinc-500 hover:text-foreground transition-colors"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp size={18} />
+                        ) : (
+                          <ChevronDown size={18} />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Proof Content */}
+                {/* Proof Review Panel */}
                 {task.status === "proof_submitted" && proof && isExpanded && (
-                  <div className="border-t border-border pt-4 space-y-3">
-                    <div className="bg-background rounded-lg p-3">
+                  <div className="border-t border-white/5 p-6 bg-surface-container space-y-4">
+                    <div className="bg-surface-container-high rounded-lg p-4">
                       {proof.text_content ? (
-                        <p className="text-sm text-foreground">
+                        <p className="text-sm text-foreground leading-relaxed">
                           {proof.text_content}
                         </p>
                       ) : proof.content_url ? (
@@ -460,17 +459,17 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                           href={proof.content_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-accent hover:underline"
+                          className="text-sm text-primary hover:text-pink transition-colors font-headline"
                         >
-                          View {proof.proof_type}
+                          View {proof.proof_type} evidence
                         </a>
                       ) : (
-                        <p className="text-sm text-muted">No content</p>
+                        <p className="text-sm text-zinc-500">No content submitted</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium mb-2">
+                      <label className="block text-[10px] font-label tracking-[0.2em] text-muted mb-2 uppercase">
                         Review Note (optional)
                       </label>
                       <textarea
@@ -483,15 +482,15 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                         }
                         placeholder="—"
                         rows={2}
-                        className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="w-full bg-surface-container-high px-4 py-3 text-sm text-foreground placeholder-zinc-600 outline-none transition-all border-b-2 border-transparent focus:border-primary rounded-sm"
                       />
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <button
                         onClick={() => handleApprove(task.id)}
                         disabled={submitting}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-success/10 text-success py-2 text-sm font-medium hover:bg-success/20 disabled:opacity-50"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-sm bg-success/10 border border-success/20 text-success text-xs font-headline font-bold tracking-widest uppercase hover:bg-success/20 transition-colors disabled:opacity-50"
                       >
                         {submitting ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -503,7 +502,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
                       <button
                         onClick={() => handleReject(task.id, proof.id)}
                         disabled={submitting}
-                        className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-danger/10 text-danger py-2 text-sm font-medium hover:bg-danger/20 disabled:opacity-50"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-sm bg-danger/10 border border-danger/20 text-danger text-xs font-headline font-bold tracking-widest uppercase hover:bg-danger/20 transition-colors disabled:opacity-50"
                       >
                         {submitting ? (
                           <Loader2 size={14} className="animate-spin" />
