@@ -50,58 +50,24 @@ export default function OnboardPage() {
 
   const handlePair = async () => {
     setSubmitting(true);
-
-    // Find the partner by their pair code (first 8 chars of their user id)
-    const { data: partners } = await supabase
-      .from("profiles")
-      .select("id, role")
-      .neq("id", user.id);
-
-    const partner = partners?.find(
-      (p) => p.id.slice(0, 8).toUpperCase() === pairCode.toUpperCase()
-    );
-
-    if (!partner) {
-      toast.error("No user found with that pair code");
+    try {
+      const res = await fetch('/api/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pairCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to pair');
+        return;
+      }
+      toast.success('Paired successfully!');
+      window.location.href = '/dashboard';
+    } catch {
+      toast.error('Something went wrong. Try again.');
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    if (partner.role === profile.role) {
-      toast.error("You need to pair with someone in a different role");
-      setSubmitting(false);
-      return;
-    }
-
-    const mistressId =
-      profile.role === "mistress" ? user.id : partner.id;
-    const slaveId =
-      profile.role === "slave" ? user.id : partner.id;
-
-    const { error } = await supabase.from("pairs").insert({
-      mistress_id: mistressId,
-      slave_id: slaveId,
-    });
-
-    if (error) {
-      toast.error("Failed to create pair: " + error.message);
-      setSubmitting(false);
-      return;
-    }
-
-    // Update both profiles
-    await supabase
-      .from("profiles")
-      .update({ paired_with: partner.id, onboarded: true })
-      .eq("id", user.id);
-
-    await supabase
-      .from("profiles")
-      .update({ paired_with: user.id, onboarded: true })
-      .eq("id", partner.id);
-
-    toast.success("Paired successfully!");
-    window.location.href = "/dashboard";
   };
 
   const handleSkip = async () => {
