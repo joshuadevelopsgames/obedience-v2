@@ -108,11 +108,11 @@ export function JournalView({
       {/* Hero Header */}
       <div>
         <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
-          OPERATIVE<br />
+          SUBMISSIVE<br />
           <span className="text-pink italic">JOURNAL</span>
         </h1>
         <p className="text-muted text-sm leading-relaxed max-w-md">
-          Monitor your operative's inner state. Leave notes, read between the lines.
+          Monitor your submissive's inner state. Leave notes, read between the lines.
         </p>
       </div>
 
@@ -154,7 +154,7 @@ export function JournalView({
           {entries.length === 0 ? (
             <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant/5">
               <BookOpen size={28} className="mx-auto mb-4 text-zinc-600" />
-              <p className="text-muted font-headline text-sm">No entries yet — your operative will share here.</p>
+              <p className="text-muted font-headline text-sm">No entries yet — your submissive will share here.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -270,7 +270,7 @@ export function JournalView({
               <span className="text-4xl">{moodEmojis[Math.round(avgMood)]}</span>
               <div>
                 <p className="text-3xl font-headline font-bold tracking-tight">{avgMood.toFixed(1)}<span className="text-muted text-lg font-normal"> / 5</span></p>
-                <p className="text-xs text-muted font-label">operative emotional state</p>
+                <p className="text-xs text-muted font-label">submissive emotional state</p>
               </div>
             </div>
           </div>

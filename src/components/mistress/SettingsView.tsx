@@ -412,7 +412,7 @@ export function SettingsView({
           <h2 className="text-xs font-headline font-bold tracking-widest uppercase">Kink Library</h2>
         </div>
         <p className="text-xs text-muted mb-5 leading-relaxed">
-          Select kinks you're open to exploring. Grok reads both your list and your operative's to generate relevant, personalised punishments and tasks — nothing outside what you've both indicated.
+          Select kinks you're open to exploring. Grok reads both your list and your submissive's to generate relevant, personalised punishments and tasks — nothing outside what you've both indicated.
         </p>
         <KinkLibrary
           profileId={userId}

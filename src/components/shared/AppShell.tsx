@@ -82,7 +82,7 @@ export function AppShell({ children, profile }: AppShellProps) {
   const xpForLevel = (lvl: number) => lvl * lvl * 25;
   const nextLevelXp = xpForLevel(profile.level + 1);
 
-  const tierLabel = isMistress ? "COMMANDER" : "OPERATIVE";
+  const tierLabel = isMistress ? "DOMINANT" : "SUBMISSIVE";
   const tierRank = `Rank: Level ${profile.level}`;
 
   return (

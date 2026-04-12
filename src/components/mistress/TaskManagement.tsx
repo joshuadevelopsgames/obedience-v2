@@ -242,7 +242,7 @@ export function TaskManagement({ pair, profile, tasks, proofs }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-headline font-bold tracking-tight">TASK MANAGEMENT</h1>
-          <p className="text-sm text-muted mt-1">Create and review operative directives</p>
+          <p className="text-sm text-muted mt-1">Create and review directives for your submissive</p>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}

@@ -228,7 +228,7 @@ export function DiscoverFeed({
           <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant/5">
             <Brain size={32} className="mx-auto mb-4 text-zinc-600" />
             <p className="text-muted font-headline text-sm mb-1">Neural buffer empty</p>
-            <p className="text-zinc-600 text-xs font-label mb-6">Let AI generate personalized protocols for your operative</p>
+            <p className="text-zinc-600 text-xs font-label mb-6">Let AI generate personalized protocols for your submissive</p>
             <button
               onClick={handleGenerateTasks}
               disabled={generatingTasks}

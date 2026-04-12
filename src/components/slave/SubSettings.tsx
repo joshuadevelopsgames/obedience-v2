@@ -152,7 +152,7 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
       {/* Hero */}
       <div>
         <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
-          OPERATIVE<br />
+          SUBMISSIVE<br />
           <span className="text-pink italic">PREFERENCES</span>
         </h1>
         <p className="text-muted text-sm">Manage your profile, limits, and safe word protocols.</p>

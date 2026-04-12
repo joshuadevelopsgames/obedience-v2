@@ -81,7 +81,7 @@ export function ContractModal({ pairId, slaveName, onClose }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Contract created — you have signed. Awaiting operative\'s countersignature.');
+      toast.success('Contract created — you have signed. Awaiting your submissive\'s countersignature.');
       onClose();
       router.refresh();
     } catch (err: any) {
