@@ -32,8 +32,8 @@ export default function LoginPage() {
       setError("Invalid username or password");
       setLoading(false);
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      // Hard redirect so session cookies are fully set before server components run
+      window.location.href = "/dashboard";
     }
   };
 

@@ -12,17 +12,13 @@ export default function OnboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  if (loading) {
+  // Always show spinner while loading — never redirect during this phase
+  if (loading || !user || !profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 size={24} className="animate-spin text-accent" />
       </div>
     );
-  }
-
-  if (!user || !profile) {
-    router.push("/login");
-    return null;
   }
 
   const generatePairCode = () => {
@@ -82,8 +78,7 @@ export default function OnboardPage() {
       .eq("id", partner.id);
 
     toast.success("Paired successfully!");
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   };
 
   const handleSkip = async () => {
@@ -92,8 +87,7 @@ export default function OnboardPage() {
       .from("profiles")
       .update({ onboarded: true })
       .eq("id", user.id);
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   };
 
   return (

@@ -53,8 +53,7 @@ export default function ChangePasswordPage() {
         .eq("id", user.id);
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   };
 
   return (
