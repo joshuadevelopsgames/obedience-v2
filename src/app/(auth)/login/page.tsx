@@ -61,8 +61,7 @@ export default function LoginPage() {
         }
         setDemoLoading(null);
       } else {
-        router.refresh();
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       console.error("Demo login error:", err);
@@ -93,8 +92,7 @@ export default function LoginPage() {
         );
         setLoading(false);
       } else {
-        router.refresh();
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       console.error("Login error:", err);
