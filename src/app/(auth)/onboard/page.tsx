@@ -12,11 +12,34 @@ export default function OnboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  // Always show spinner while loading — never redirect during this phase
-  if (loading || !user || !profile) {
+  // Loading — wait for auth + profile
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  // Not logged in at all
+  if (!user) {
+    if (typeof window !== "undefined") window.location.href = "/login";
+    return null;
+  }
+
+  // Loaded but profile still missing — show error instead of spinning forever
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center space-y-4">
+          <p className="text-sm text-muted">Couldn't load your profile. Try refreshing.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs text-primary underline"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
     );
   }
