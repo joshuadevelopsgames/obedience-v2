@@ -45,23 +45,18 @@ export function JournalView({
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       const dayCheckins = moodCheckins.filter(
-        (m) =>
-          new Date(m.created_at).toDateString() === date.toDateString()
+        (m) => new Date(m.created_at).toDateString() === date.toDateString()
       );
       if (dayCheckins.length > 0) {
-        days.push(dayCheckins[dayCheckins.length - 1]); // Latest for that day
+        days.push(dayCheckins[dayCheckins.length - 1]);
       }
     }
     return days;
   }, [moodCheckins]);
 
   const handleGeneratePrompts = async () => {
-    if (!pair) {
-      toast.error("You need to be paired first");
-      return;
-    }
+    if (!pair) { toast.error("You need to be paired first"); return; }
     setGenerating(true);
-
     try {
       const res = await fetch("/api/ai/generate-prompts", {
         method: "POST",
@@ -69,45 +64,31 @@ export function JournalView({
         body: JSON.stringify({ pairId: pair.id, type: "journal" }),
       });
       const data = await res.json();
-
       if (data.prompts) {
         toast.success(`Generated ${data.prompts.length} journal prompts`);
       } else {
         toast.error(data.error || "Failed to generate prompts");
       }
-    } catch {
-      toast.error("Failed to generate prompts");
-    } finally {
-      setGenerating(false);
-    }
+    } catch { toast.error("Failed to generate prompts"); }
+    setGenerating(false);
   };
 
   const handleSaveNote = async (entryId: string) => {
     setSavingNote(true);
-
     try {
       const { error } = await supabase
         .from("journal_entries")
-        .update({
-          mistress_note: editNote.trim() || null,
-          mistress_emoji: selectedEmoji || null,
-        })
+        .update({ mistress_note: editNote.trim() || null, mistress_emoji: selectedEmoji || null })
         .eq("id", entryId);
-
       if (!error) {
         toast.success("Note saved");
         setEditingEntryId(null);
         setEditNote("");
         setSelectedEmoji(null);
         router.refresh();
-      } else {
-        toast.error("Failed to save note");
-      }
-    } catch {
-      toast.error("Failed to save note");
-    } finally {
-      setSavingNote(false);
-    }
+      } else { toast.error("Failed to save note"); }
+    } catch { toast.error("Failed to save note"); }
+    setSavingNote(false);
   };
 
   const openEntryEditor = (entry: JournalEntry) => {
@@ -117,188 +98,161 @@ export function JournalView({
     setSelectedEmoji(entry.mistress_emoji || null);
   };
 
+  const tabItems = [
+    { value: "journal" as const, label: "Journal", icon: <BookOpen size={14} /> },
+    { value: "mood" as const, label: "Mood Data", icon: <span className="text-sm">📊</span> },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
-        <button
-          onClick={() => setActiveTab("journal")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "journal"
-              ? "border-b-2 border-accent text-accent"
-              : "text-muted hover:text-foreground"
-          }`}
-        >
-          <BookOpen className="inline mr-2" size={16} />
-          Journal Entries
-        </button>
-        <button
-          onClick={() => setActiveTab("mood")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === "mood"
-              ? "border-b-2 border-accent text-accent"
-              : "text-muted hover:text-foreground"
-          }`}
-        >
-          <span className="text-lg">📊</span>
-          <span className="ml-2">Mood Tracker</span>
-        </button>
+    <div className="flex flex-col gap-8">
+      {/* Hero Header */}
+      <div>
+        <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
+          OPERATIVE<br />
+          <span className="text-pink italic">JOURNAL</span>
+        </h1>
+        <p className="text-muted text-sm leading-relaxed max-w-md">
+          Monitor your operative's inner state. Leave notes, read between the lines.
+        </p>
       </div>
 
-      {/* Journal Tab */}
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-white/5">
+        {tabItems.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`flex items-center gap-2 font-label text-xs font-bold uppercase tracking-widest pb-3 transition-colors ${
+              activeTab === tab.value
+                ? "text-primary border-b-2 border-primary/30"
+                : "text-zinc-500 hover:text-foreground"
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Journal Tab ─────────────────────────────────── */}
       {activeTab === "journal" && (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Journal Entries</h2>
+            <span className="text-xs font-label uppercase tracking-widest text-muted">
+              {entries.length} entr{entries.length !== 1 ? "ies" : "y"}
+            </span>
             <button
               onClick={handleGeneratePrompts}
               disabled={generating || !pair}
-              className="flex items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+              className="btn-gradient px-4 py-2 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-2 disabled:opacity-50"
             >
-              {generating ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Sparkles size={16} />
-              )}
+              {generating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
               {generating ? "Generating..." : "Generate Prompts"}
             </button>
           </div>
 
           {entries.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-              <p className="text-sm text-muted">
-                No journal entries yet. Your submissive will share entries here.
-              </p>
+            <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant/5">
+              <BookOpen size={28} className="mx-auto mb-4 text-zinc-600" />
+              <p className="text-muted font-headline text-sm">No entries yet — your operative will share here.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="flex flex-col gap-4">
               {entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="rounded-xl border border-border bg-card p-4"
-                >
+                <div key={entry.id} className="bg-surface-low rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 overflow-hidden glow-border-primary">
                   {/* Entry Header */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="text-xs text-muted">
-                        {new Date(entry.created_at).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric", year: "numeric" }
-                        )}
-                      </p>
-                      {entry.prompt && (
-                        <p className="text-sm italic text-purple mt-1">
-                          "{entry.prompt}"
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">
+                          {new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </p>
+                        {entry.prompt && (
+                          <p className="text-xs italic text-primary mt-1">"{entry.prompt}"</p>
+                        )}
+                      </div>
+                      {entry.is_private && (
+                        <span className="text-[10px] font-headline font-bold tracking-widest bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded">PRIVATE</span>
                       )}
                     </div>
-                    {entry.is_private && (
-                      <span className="text-xs bg-purple/20 text-purple px-2 py-1 rounded">
-                        Private
-                      </span>
+
+                    <p className={`text-sm text-foreground leading-relaxed ${expandedEntryId === entry.id ? "" : "line-clamp-3"}`}>
+                      {entry.content}
+                    </p>
+
+                    {entry.content.length > 150 && (
+                      <button
+                        onClick={() => setExpandedEntryId(expandedEntryId === entry.id ? null : entry.id)}
+                        className="text-xs text-primary hover:underline mt-2"
+                      >
+                        {expandedEntryId === entry.id ? "Hide" : "Read more"}
+                      </button>
                     )}
                   </div>
 
-                  {/* Entry Content */}
-                  <p
-                    className={`text-sm text-foreground ${
-                      expandedEntryId === entry.id
-                        ? ""
-                        : "line-clamp-3"
-                    }`}
-                  >
-                    {entry.content}
-                  </p>
-
-                  {/* Expand/Collapse Button */}
-                  {entry.content.length > 150 && expandedEntryId !== entry.id && (
-                    <button
-                      onClick={() => setExpandedEntryId(entry.id)}
-                      className="text-xs text-accent hover:underline mt-2"
-                    >
-                      Read more
-                    </button>
-                  )}
-                  {expandedEntryId === entry.id && (
-                    <button
-                      onClick={() => setExpandedEntryId(null)}
-                      className="text-xs text-accent hover:underline mt-2"
-                    >
-                      Hide
-                    </button>
-                  )}
-
-                  {/* Mistress Note Section */}
-                  {editingEntryId === entry.id ? (
-                    <div className="mt-4 space-y-3 p-3 bg-background rounded-lg">
-                      <p className="text-xs font-medium text-muted">Add Your Note</p>
-                      <textarea
-                        value={editNote}
-                        onChange={(e) => setEditNote(e.target.value)}
-                        placeholder="Share your thoughts…"
-                        className="w-full rounded-lg bg-card border border-border px-3 py-2 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
-                        rows={3}
-                      />
-                      <div className="flex gap-1 flex-wrap">
-                        {reactionEmojis.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() =>
-                              setSelectedEmoji(
-                                selectedEmoji === emoji ? null : emoji
-                              )
-                            }
-                            className={`text-xl p-1 rounded transition-colors ${
-                              selectedEmoji === emoji
-                                ? "bg-accent/20 scale-125"
-                                : "hover:bg-card"
-                            }`}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleSaveNote(entry.id)}
-                          disabled={savingNote}
-                          className="flex-1 rounded-lg bg-accent/20 border border-accent px-3 py-2 text-sm font-medium text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
-                        >
-                          {savingNote ? "Saving..." : "Save Note"}
-                        </button>
-                        <button
-                          onClick={() => setEditingEntryId(null)}
-                          className="flex-1 rounded-lg bg-muted/10 border border-muted px-3 py-2 text-sm font-medium text-muted hover:bg-muted/20 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-3 flex items-start justify-between">
-                      {entry.mistress_note ? (
-                        <div className="flex-1">
-                          <p className="text-xs text-muted mb-1">Your note:</p>
-                          <div className="flex items-start gap-2">
-                            <p className="text-sm text-foreground bg-background rounded p-2 flex-1">
-                              {entry.mistress_note}
-                            </p>
-                            {entry.mistress_emoji && (
-                              <span className="text-xl">{entry.mistress_emoji}</span>
-                            )}
-                          </div>
+                  {/* Note area */}
+                  <div className="border-t border-white/5 bg-surface-container px-5 py-4">
+                    {editingEntryId === entry.id ? (
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted">Your Commander Note</p>
+                        <textarea
+                          value={editNote}
+                          onChange={(e) => setEditNote(e.target.value)}
+                          placeholder="Share your thoughts on this entry…"
+                          className="w-full bg-surface-container-high border-b border-primary/40 px-0 py-1.5 text-sm text-foreground placeholder-muted focus:outline-none focus:border-primary resize-none"
+                          rows={3}
+                        />
+                        <div className="flex gap-1 flex-wrap">
+                          {reactionEmojis.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => setSelectedEmoji(selectedEmoji === emoji ? null : emoji)}
+                              className={`text-xl p-1.5 rounded transition-all ${selectedEmoji === emoji ? "bg-primary/20 scale-125" : "hover:bg-surface-container-high"}`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        <p className="text-xs text-muted italic">No note yet</p>
-                      )}
-                      <button
-                        onClick={() => openEntryEditor(entry)}
-                        className="ml-2 text-xs text-accent hover:underline whitespace-nowrap"
-                      >
-                        {entry.mistress_note ? "Edit" : "Add Note"}
-                      </button>
-                    </div>
-                  )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleSaveNote(entry.id)}
+                            disabled={savingNote}
+                            className="flex-1 btn-gradient py-2 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase disabled:opacity-50"
+                          >
+                            {savingNote ? "Saving..." : "Save Note"}
+                          </button>
+                          <button
+                            onClick={() => setEditingEntryId(null)}
+                            className="flex-1 border border-outline-variant/20 py-2 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase text-muted hover:text-foreground transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-4">
+                        {entry.mistress_note ? (
+                          <div className="flex-1">
+                            <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-2">Your note</p>
+                            <div className="flex items-start gap-2">
+                              <p className="text-sm text-foreground bg-surface-container-high rounded px-3 py-2 flex-1 border-l-4 border-primary">
+                                {entry.mistress_note}
+                              </p>
+                              {entry.mistress_emoji && <span className="text-xl">{entry.mistress_emoji}</span>}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-600 italic">No note added yet</p>
+                        )}
+                        <button
+                          onClick={() => openEntryEditor(entry)}
+                          className="text-[10px] font-headline font-bold tracking-widest uppercase text-primary hover:underline whitespace-nowrap flex-shrink-0"
+                        >
+                          {entry.mistress_note ? "Edit" : "Add Note"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -306,60 +260,44 @@ export function JournalView({
         </div>
       )}
 
-      {/* Mood Tab */}
+      {/* ── Mood Tab ─────────────────────────────────────── */}
       {activeTab === "mood" && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Average Mood</h2>
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-              <span className="text-3xl">
-                {moodEmojis[Math.round(avgMood)]}
-              </span>
+        <div className="flex flex-col gap-6">
+          {/* Average mood */}
+          <div className="bg-surface-low rounded-xl border border-outline-variant/10 p-6">
+            <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-3">14-Day Average</p>
+            <div className="flex items-center gap-4">
+              <span className="text-4xl">{moodEmojis[Math.round(avgMood)]}</span>
               <div>
-                <p className="text-sm text-muted">Overall mood (14 days)</p>
-                <p className="text-lg font-semibold">
-                  {avgMood.toFixed(1)} / 5
-                </p>
+                <p className="text-3xl font-headline font-bold tracking-tight">{avgMood.toFixed(1)}<span className="text-muted text-lg font-normal"> / 5</span></p>
+                <p className="text-xs text-muted font-label">operative emotional state</p>
               </div>
             </div>
           </div>
 
+          {/* Day-by-day */}
           <div>
-            <h3 className="text-sm font-semibold mb-3 text-muted">Last 14 Days</h3>
-            <div className="space-y-2">
-              {last14Days.length === 0 ? (
-                <p className="text-sm text-muted text-center py-6">
-                  No mood check-ins yet
-                </p>
-              ) : (
-                last14Days.map((checkin) => (
-                  <div
-                    key={checkin.id}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
-                  >
-                    <span className="text-2xl min-w-8">
-                      {moodEmojis[checkin.mood]}
-                    </span>
+            <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-4">Last 14 Days</p>
+            {last14Days.length === 0 ? (
+              <div className="bg-surface-container rounded-xl p-8 text-center border border-outline-variant/5">
+                <p className="text-muted text-sm font-headline">No mood check-ins yet</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {last14Days.map((checkin) => (
+                  <div key={checkin.id} className="flex items-center gap-4 bg-surface-low rounded-xl px-5 py-3 border border-outline-variant/10">
+                    <span className="text-2xl w-8 text-center">{moodEmojis[checkin.mood]}</span>
                     <div className="flex-1">
-                      <p className="text-xs text-muted">
-                        {new Date(checkin.created_at).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric" }
-                        )}
+                      <p className="text-[10px] font-label uppercase tracking-widest text-muted">
+                        {new Date(checkin.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </p>
-                      {checkin.note && (
-                        <p className="text-sm text-foreground mt-1">
-                          {checkin.note}
-                        </p>
-                      )}
+                      {checkin.note && <p className="text-sm text-foreground mt-0.5">{checkin.note}</p>}
                     </div>
-                    <span className="text-xs text-muted">
-                      {checkin.mood}/5
-                    </span>
+                    <span className="text-xs font-headline font-bold text-primary">{checkin.mood}/5</span>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

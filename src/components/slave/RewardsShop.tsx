@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Gift,
-  Zap,
-  Lock,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-} from "lucide-react";
+import { Gift, Zap, Lock, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -29,134 +22,108 @@ interface Props {
   redemptions: Redemption[];
 }
 
-export function RewardsShop({
-  profile,
-  pair,
-  rewards,
-  redemptions,
-}: Props) {
+export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
   const [redeeming, setRedeeming] = useState<string | null>(null);
   const supabase = createClient();
   const router = useRouter();
 
   const handleRedeem = async (reward: Reward) => {
-    if (profile.xp < reward.xp_cost) {
-      toast.error("Not enough XP");
-      return;
-    }
-
+    if (profile.xp < reward.xp_cost) { toast.error("Not enough XP"); return; }
     setRedeeming(reward.id);
-
-    // Insert redemption
-    const { error: redemptionError } = await supabase
-      .from("redemptions")
-      .insert({
-        reward_id: reward.id,
-        user_id: profile.id,
-        status: "pending",
-      });
-
+    const { error: redemptionError } = await supabase.from("redemptions").insert({
+      reward_id: reward.id,
+      user_id: profile.id,
+      status: "pending",
+    });
     if (!redemptionError) {
-      // Update profile XP
       const newXp = profile.xp - reward.xp_cost;
-      await supabase
-        .from("profiles")
-        .update({ xp: newXp })
-        .eq("id", profile.id);
-
+      await supabase.from("profiles").update({ xp: newXp }).eq("id", profile.id);
       toast.success(`Redeemed "${reward.title}"! Your Mistress will fulfill it soon.`);
       router.refresh();
-    } else {
-      toast.error("Failed to redeem reward");
-    }
+    } else { toast.error("Failed to redeem reward"); }
     setRedeeming(null);
   };
 
-  const activeRedemptions = redemptions.filter((r) =>
-    ["pending", "approved"].includes(r.status)
-  );
-  const completedRedemptions = redemptions.filter((r) =>
-    ["fulfilled", "denied"].includes(r.status)
-  );
+  const activeRedemptions = redemptions.filter((r) => ["pending", "approved"].includes(r.status));
+  const completedRedemptions = redemptions.filter((r) => ["fulfilled", "denied"].includes(r.status));
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
-          <Gift size={24} className="text-accent" />
-          Rewards Shop
-        </h1>
-        <p className="text-sm text-muted">Redeem your XP for special rewards from your Mistress</p>
-      </div>
-
-      {/* XP Balance */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted mb-1">Available XP</p>
-            <p className="text-4xl font-bold text-accent">{profile.xp}</p>
+    <div className="flex flex-col gap-8">
+      {/* Hero */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+        <div className="md:col-span-8">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-tighter leading-[0.9] mb-3">
+            REWARDS<br />
+            <span className="text-pink italic">EXCHANGE</span>
+          </h1>
+          <p className="text-muted text-lg max-w-md leading-relaxed">
+            Your obedience has value. Redeem your earned XP for privileges from your Mistress.
+          </p>
+        </div>
+        <div className="md:col-span-4">
+          <div className="glass-panel border border-outline-variant/10 p-6 rounded-xl">
+            <p className="text-[10px] font-label uppercase tracking-widest text-primary mb-2">Available Balance</p>
+            <p className="text-4xl font-headline font-bold tracking-tight text-primary" style={{ textShadow: "0 0 20px rgba(204,151,255,0.4)" }}>
+              {profile.xp.toLocaleString()}
+            </p>
+            <p className="text-xs text-muted mt-1 font-label">XP available</p>
           </div>
-          <Zap size={32} className="text-accent opacity-50" />
         </div>
       </div>
 
       {/* Available Rewards */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Available Rewards</h2>
-        {rewards.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
-            <Gift size={24} className="mx-auto mb-2 text-muted" />
-            <p className="text-sm text-muted">
-              No rewards available yet. Your Mistress will create some soon.
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-sm font-headline font-bold tracking-widest uppercase flex items-center gap-2">
+              <Gift size={14} className="text-primary" />
+              Available Rewards
+            </h2>
+            <p className="text-[10px] font-label uppercase tracking-widest text-muted mt-1">
+              {rewards.length} reward{rewards.length !== 1 ? "s" : ""} available
             </p>
           </div>
+        </div>
+
+        {rewards.length === 0 ? (
+          <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant/5">
+            <Gift size={28} className="mx-auto mb-4 text-zinc-600" />
+            <p className="text-muted font-headline text-sm">No rewards yet — your Mistress will create some.</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rewards.map((reward) => {
               const canAfford = profile.xp >= reward.xp_cost;
               const isRedeeming = redeeming === reward.id;
 
               return (
-                <div
-                  key={reward.id}
-                  className="rounded-xl border border-border bg-card p-4 space-y-3 flex flex-col"
-                >
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium">{reward.title}</h3>
+                <div key={reward.id} className={`bg-surface-low rounded-xl border transition-all duration-300 overflow-hidden flex flex-col ${canAfford ? "border-transparent hover:border-primary/20 glow-border-primary" : "border-outline-variant/5 opacity-60"}`}>
+                  <div className="p-5 flex-1">
+                    <h3 className="font-headline font-bold text-sm tracking-tight mb-1">{reward.title}</h3>
                     {reward.description && (
-                      <p className="text-xs text-muted mt-1 line-clamp-2">
-                        {reward.description}
-                      </p>
+                      <p className="text-xs text-muted leading-relaxed line-clamp-2">{reward.description}</p>
                     )}
                   </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <div className="flex items-center gap-1">
-                      <Zap size={14} className="text-accent" />
-                      <span className="text-sm font-bold text-accent">
-                        {reward.xp_cost}
-                      </span>
+                  <div className="border-t border-white/5 px-5 py-3 bg-surface-container flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Zap size={14} className="text-primary" />
+                      <span className="text-sm font-headline font-bold text-primary">{reward.xp_cost.toLocaleString()}</span>
+                      <span className="text-xs text-muted font-label">XP</span>
                     </div>
-
                     <button
                       onClick={() => handleRedeem(reward)}
-                      disabled={!canAfford || isRedeeming}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1 ${
+                      disabled={!canAfford || !!isRedeeming}
+                      className={`px-4 py-1.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-1.5 transition-colors ${
                         canAfford
-                          ? "bg-accent text-black hover:bg-accent/90"
-                          : "bg-border text-muted cursor-not-allowed opacity-50"
+                          ? "btn-gradient"
+                          : "bg-surface-container-high text-muted border border-outline-variant/20 cursor-not-allowed"
                       }`}
                     >
                       {isRedeeming ? (
-                        <>
-                          <Clock size={12} />
-                          Redeeming...
-                        </>
-                      ) : (
-                        <>
-                          {!canAfford ? <Lock size={12} /> : "Redeem"}
-                        </>
-                      )}
+                        <><Clock size={10} /> Redeeming…</>
+                      ) : !canAfford ? (
+                        <><Lock size={10} /> Locked</>
+                      ) : "Redeem"}
                     </button>
                   </div>
                 </div>
@@ -164,81 +131,68 @@ export function RewardsShop({
             })}
           </div>
         )}
-      </div>
+      </section>
 
       {/* Active Redemptions */}
       {activeRedemptions.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Pending Redemptions</h2>
-          <div className="space-y-2">
+        <section>
+          <h2 className="text-xs font-label uppercase tracking-widest text-muted mb-4">Pending Redemptions</h2>
+          <div className="flex flex-col gap-2">
             {activeRedemptions.map((redemption) => {
               const reward = rewards.find((r) => r.id === redemption.reward_id);
               return (
-                <div
-                  key={redemption.id}
-                  className="rounded-xl border border-purple/30 bg-purple/5 p-3 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2 flex-1">
-                    <Clock size={14} className="text-purple" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {reward?.title || "Unknown reward"}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {redemption.status === "pending"
-                          ? "Waiting for approval"
-                          : "Approved"}
+                <div key={redemption.id} className="bg-surface-low rounded-xl border border-primary/20 px-5 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Clock size={14} className="text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-headline font-bold tracking-tight">{reward?.title || "Unknown reward"}</p>
+                      <p className="text-[10px] font-label uppercase tracking-widest text-muted">
+                        {redemption.status === "pending" ? "Awaiting approval" : "Approved"}
                       </p>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Completed Redemptions */}
-      {completedRedemptions.length > 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Redemption History</h2>
-          <div className="space-y-2">
-            {completedRedemptions.map((redemption) => {
-              const reward = rewards.find((r) => r.id === redemption.reward_id);
-              return (
-                <div
-                  key={redemption.id}
-                  className={`rounded-xl border p-3 flex items-center justify-between ${
-                    redemption.status === "fulfilled"
-                      ? "border-success/30 bg-success/5"
-                      : "border-danger/30 bg-danger/5"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 flex-1">
-                    {redemption.status === "fulfilled" ? (
-                      <CheckCircle2 size={14} className="text-success" />
-                    ) : (
-                      <AlertCircle size={14} className="text-danger" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {reward?.title || "Unknown reward"}
-                      </p>
-                      <p className="text-xs text-muted">
-                        {redemption.status === "fulfilled"
-                          ? "Fulfilled"
-                          : "Request denied"}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted ml-2">
-                    {new Date(redemption.created_at).toLocaleDateString()}
+                  <span className={`text-[10px] font-headline font-bold tracking-widest px-2 py-0.5 rounded border ${
+                    redemption.status === "approved"
+                      ? "text-success bg-success/10 border-success/20"
+                      : "text-primary bg-primary/10 border-primary/20"
+                  }`}>
+                    {redemption.status.toUpperCase()}
                   </span>
                 </div>
               );
             })}
           </div>
-        </div>
+        </section>
+      )}
+
+      {/* Redemption History */}
+      {completedRedemptions.length > 0 && (
+        <section>
+          <h2 className="text-xs font-label uppercase tracking-widest text-muted mb-4">Redemption History</h2>
+          <div className="flex flex-col gap-2">
+            {completedRedemptions.map((redemption) => {
+              const reward = rewards.find((r) => r.id === redemption.reward_id);
+              return (
+                <div key={redemption.id} className={`bg-surface-low rounded-xl border px-5 py-3 flex items-center justify-between ${
+                  redemption.status === "fulfilled" ? "border-success/20" : "border-[#ff3366]/20"
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {redemption.status === "fulfilled"
+                      ? <CheckCircle2 size={14} className="text-success flex-shrink-0" />
+                      : <AlertCircle size={14} className="text-[#ff3366] flex-shrink-0" />
+                    }
+                    <div>
+                      <p className="text-sm font-headline font-bold tracking-tight">{reward?.title || "Unknown reward"}</p>
+                      <p className="text-[10px] font-label uppercase tracking-widest text-muted">
+                        {redemption.status === "fulfilled" ? "Fulfilled" : "Denied"} · {new Date(redemption.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       )}
     </div>
   );

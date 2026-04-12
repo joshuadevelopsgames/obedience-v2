@@ -40,13 +40,9 @@ export function SettingsView({
 }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [title, setTitle] = useState(profile.title || "");
-  const [tonePreference, setTonePreference] = useState<TonePreference>(
-    profile.tone_preference
-  );
+  const [tonePreference, setTonePreference] = useState<TonePreference>(profile.tone_preference);
   const [autopilot, setAutopilot] = useState(profile.autopilot);
-  const [autopilotMode, setAutopilotMode] = useState<AutopilotMode>(
-    profile.autopilot_mode
-  );
+  const [autopilotMode, setAutopilotMode] = useState<AutopilotMode>(profile.autopilot_mode);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUnpairConfirm, setShowUnpairConfirm] = useState(false);
@@ -57,36 +53,20 @@ export function SettingsView({
   const pairCode = userId.slice(0, 8).toUpperCase();
 
   const handleSaveProfile = async () => {
-    if (!displayName.trim()) {
-      toast.error("Display name is required");
-      return;
-    }
-
+    if (!displayName.trim()) { toast.error("Display name is required"); return; }
     setSaving(true);
-
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          display_name: displayName.trim(),
-          title: title.trim() || null,
-          tone_preference: tonePreference,
-          autopilot,
-          autopilot_mode: autopilotMode,
-        })
-        .eq("id", profile.id);
-
-      if (!error) {
-        toast.success("Settings saved");
-        router.refresh();
-      } else {
-        toast.error("Failed to save settings");
-      }
-    } catch {
-      toast.error("Failed to save settings");
-    } finally {
-      setSaving(false);
-    }
+      const { error } = await supabase.from("profiles").update({
+        display_name: displayName.trim(),
+        title: title.trim() || null,
+        tone_preference: tonePreference,
+        autopilot,
+        autopilot_mode: autopilotMode,
+      }).eq("id", profile.id);
+      if (!error) { toast.success("Settings saved"); router.refresh(); }
+      else { toast.error("Failed to save settings"); }
+    } catch { toast.error("Failed to save settings"); }
+    setSaving(false);
   };
 
   const handleCopyPairCode = () => {
@@ -98,144 +78,123 @@ export function SettingsView({
   const handleUnpair = async () => {
     if (!pair) return;
     setUnpairing(true);
-
     try {
-      // Update pair status to ended
-      await supabase
-        .from("pairs")
-        .update({ status: "ended" })
-        .eq("id", pair.id);
-
-      // Clear paired_with on both profiles
-      await supabase
-        .from("profiles")
-        .update({ paired_with: null })
-        .in("id", [pair.mistress_id, pair.slave_id]);
-
+      await supabase.from("pairs").update({ status: "ended" }).eq("id", pair.id);
+      await supabase.from("profiles").update({ paired_with: null }).in("id", [pair.mistress_id, pair.slave_id]);
       toast.success("Pair ended");
       router.refresh();
-    } catch {
-      toast.error("Failed to end pair");
-    } finally {
-      setUnpairing(false);
-      setShowUnpairConfirm(false);
-    }
+    } catch { toast.error("Failed to end pair"); }
+    setUnpairing(false);
+    setShowUnpairConfirm(false);
   };
 
+  const SectionCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-surface-low rounded-xl border border-outline-variant/10 p-6 ${className}`}>
+      {children}
+    </div>
+  );
+
+  const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">{children}</p>
+  );
+
+  const UnderlineInput = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder || "—"}
+      className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
+    />
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Profile Section */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings size={18} className="text-accent" />
-          <h2 className="text-lg font-semibold">Profile</h2>
+    <div className="flex flex-col gap-8 max-w-2xl">
+      {/* Hero */}
+      <div>
+        <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
+          COMMAND<br />
+          <span className="text-pink italic">SETTINGS</span>
+        </h1>
+        <p className="text-muted text-sm">Configure your dominance profile and dynamic preferences.</p>
+      </div>
+
+      {/* Profile */}
+      <SectionCard>
+        <div className="flex items-center gap-2 mb-5">
+          <Settings size={16} className="text-primary" />
+          <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Profile</h2>
         </div>
-
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-muted block mb-2">
-              Display Name
-            </label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="—"
-              className="w-full rounded-lg bg-background border border-border px-4 py-2.5 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/50"
-            />
+            <SectionLabel>Display Name</SectionLabel>
+            <UnderlineInput value={displayName} onChange={setDisplayName} placeholder="Your commander name" />
           </div>
-
           <div>
-            <label className="text-sm font-medium text-muted block mb-2">
-              Title / Honorific
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Mistress, Goddess, Dominatrix…"
-              className="w-full rounded-lg bg-background border border-border px-4 py-2.5 text-sm text-foreground placeholder-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/50"
-            />
+            <SectionLabel>Title / Honorific</SectionLabel>
+            <UnderlineInput value={title} onChange={setTitle} placeholder="Mistress, Goddess, Dominatrix…" />
           </div>
-
           <button
             onClick={handleSaveProfile}
             disabled={saving}
-            className="w-full rounded-lg bg-accent/20 border border-accent px-4 py-2.5 text-sm font-medium text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
+            className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Profile"}
           </button>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Dynamic Preferences Section */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap size={18} className="text-accent" />
-          <h2 className="text-lg font-semibold">Dynamic Preferences</h2>
+      {/* Dynamic Preferences */}
+      <SectionCard>
+        <div className="flex items-center gap-2 mb-5">
+          <Zap size={16} className="text-primary" />
+          <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Dynamic Preferences</h2>
         </div>
-
-        <div className="space-y-4">
-          {/* Tone Preference */}
+        <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-muted block mb-3">
-              Tone Preference
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(["strict", "nurturing", "playful", "cold"] as const).map(
-                (tone) => (
-                  <button
-                    key={tone}
-                    onClick={() => setTonePreference(tone)}
-                    className={`rounded-lg border px-4 py-3 text-sm transition-all ${
-                      tonePreference === tone
-                        ? "border-accent bg-accent/10 text-accent font-medium"
-                        : "border-border bg-background hover:border-accent/50"
-                    }`}
-                  >
-                    <p className="font-medium capitalize">{tone}</p>
-                    <p className="text-xs text-muted mt-1">
-                      {toneDescriptions[tone]}
-                    </p>
-                  </button>
-                )
-              )}
+            <SectionLabel>Tone Preference</SectionLabel>
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              {(["strict", "nurturing", "playful", "cold"] as const).map((tone) => (
+                <button
+                  key={tone}
+                  onClick={() => setTonePreference(tone)}
+                  className={`rounded-sm border px-4 py-3 text-left transition-all ${
+                    tonePreference === tone
+                      ? "border-primary/40 bg-primary/10"
+                      : "border-outline-variant/10 bg-surface-container hover:border-outline-variant/30"
+                  }`}
+                >
+                  <p className={`text-xs font-headline font-bold uppercase tracking-widest ${tonePreference === tone ? "text-primary" : "text-foreground"}`}>
+                    {tone}
+                  </p>
+                  <p className="text-[10px] text-muted mt-1">{toneDescriptions[tone]}</p>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Autopilot Toggle */}
-          <div className="border-t border-border pt-4">
+          {/* Autopilot toggle */}
+          <div className="border-t border-white/5 pt-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Autopilot Mode</p>
-                <p className="text-xs text-muted mt-1">
-                  AI manages tasks and check-ins
-                </p>
+                <p className="text-sm font-headline font-bold tracking-tight">Autopilot Mode</p>
+                <p className="text-xs text-muted mt-0.5">AI manages tasks and check-ins automatically</p>
               </div>
               <button
                 onClick={() => setAutopilot(!autopilot)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  autopilot ? "bg-accent" : "bg-muted"
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autopilot ? "bg-primary" : "bg-zinc-700"}`}
               >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    autopilot ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autopilot ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
 
-            {/* Autopilot Mode Selector */}
             {autopilot && (
-              <div className="mt-3 space-y-2">
-                <label className="text-xs font-medium text-muted block">
-                  Mode
-                </label>
+              <div className="mt-4">
+                <SectionLabel>Autopilot Mode</SectionLabel>
                 <select
                   value={autopilotMode}
                   onChange={(e) => setAutopilotMode(e.target.value as AutopilotMode)}
-                  className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  className="w-full mt-2 bg-surface-container border border-outline-variant/20 rounded-sm px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="light">Light (minimal interventions)</option>
                   <option value="full">Full (active management)</option>
@@ -248,170 +207,125 @@ export function SettingsView({
           <button
             onClick={handleSaveProfile}
             disabled={saving}
-            className="w-full rounded-lg bg-accent/20 border border-accent px-4 py-2.5 text-sm font-medium text-accent hover:bg-accent/30 transition-colors disabled:opacity-50"
+            className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Preferences"}
           </button>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Pair Info Section */}
+      {/* Pair Info */}
       {pair && subProfile && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users size={18} className="text-purple" />
-            <h2 className="text-lg font-semibold">Pair Information</h2>
+        <SectionCard>
+          <div className="flex items-center gap-2 mb-5">
+            <Users size={16} className="text-primary" />
+            <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Pair Information</h2>
           </div>
-
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted mb-1">Submissive</p>
-                <p className="font-medium">
-                  {subProfile.collar_name || subProfile.display_name}
-                </p>
-                <p className="text-xs text-muted mt-1">
-                  Level {subProfile.level}
-                </p>
+                <SectionLabel>Operative</SectionLabel>
+                <p className="font-headline font-bold text-sm">{subProfile.collar_name || subProfile.display_name}</p>
+                <p className="text-xs text-muted mt-0.5">Level {subProfile.level}</p>
               </div>
               <div>
-                <p className="text-xs text-muted mb-1">Pair Status</p>
-                <p className="font-medium capitalize text-success">
+                <SectionLabel>Status</SectionLabel>
+                <p className={`font-headline font-bold text-sm capitalize ${pair.status === "active" ? "text-success" : "text-muted"}`}>
                   {pair.status}
                 </p>
               </div>
             </div>
 
-            <div className="border-t border-border pt-4">
-              <p className="text-xs text-muted mb-2">Your Pair Code</p>
-              <div className="flex gap-2">
-                <div className="flex-1 rounded-lg bg-background border border-border px-4 py-2.5">
-                  <code className="text-sm font-mono text-accent">
-                    {pairCode}
-                  </code>
+            <div>
+              <SectionLabel>Your Pair Code</SectionLabel>
+              <div className="flex gap-2 mt-2">
+                <div className="flex-1 bg-surface-container border border-outline-variant/20 rounded-sm px-4 py-2.5">
+                  <code className="text-sm font-mono text-primary">{pairCode}</code>
                 </div>
                 <button
                   onClick={handleCopyPairCode}
-                  className="rounded-lg bg-accent/20 border border-accent px-4 py-2.5 text-accent hover:bg-accent/30 transition-colors"
-                  title="Copy pair code"
+                  className="btn-gradient px-4 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-1"
                 >
-                  {copied ? (
-                    <Check size={16} />
-                  ) : (
-                    <Copy size={16} />
-                  )}
+                  {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
                 </button>
               </div>
             </div>
 
             <button
               onClick={() => setShowUnpairConfirm(true)}
-              className="w-full rounded-lg bg-danger/10 border border-danger px-4 py-2.5 text-sm font-medium text-danger hover:bg-danger/20 transition-colors flex items-center justify-center gap-2"
+              className="w-full border border-[#ff3366]/30 bg-[#ff3366]/5 text-[#ff3366] py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-[#ff3366]/10 transition-colors"
             >
-              <LogOut size={16} />
+              <LogOut size={14} />
               End Pairing
             </button>
           </div>
-        </div>
+        </SectionCard>
       )}
 
-      {/* Contract Section */}
+      {/* Contract */}
       {pair && contract && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Shield size={18} className="text-accent" />
-            <h2 className="text-lg font-semibold">Contract</h2>
+        <SectionCard>
+          <div className="flex items-center gap-2 mb-5">
+            <Shield size={16} className="text-primary" />
+            <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Contract</h2>
           </div>
-
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted mb-1">Version</p>
-                <p className="font-medium">{contract.version}</p>
+                <SectionLabel>Version</SectionLabel>
+                <p className="font-headline font-bold text-sm">{contract.version}</p>
               </div>
               <div>
-                <p className="text-xs text-muted mb-1">Status</p>
+                <SectionLabel>Status</SectionLabel>
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-block h-2 w-2 rounded-full ${
-                      contract.mistress_signed && contract.slave_signed
-                        ? "bg-success"
-                        : "bg-yellow-400"
-                    }`}
-                  />
-                  <p className="text-sm font-medium">
-                    {contract.mistress_signed && contract.slave_signed
-                      ? "Signed"
-                      : "Pending"}
-                  </p>
+                  <span className={`inline-block h-2 w-2 rounded-full ${contract.mistress_signed && contract.slave_signed ? "bg-success" : "bg-warning"}`} />
+                  <p className="text-sm font-headline font-bold">{contract.mistress_signed && contract.slave_signed ? "Signed" : "Pending"}</p>
                 </div>
               </div>
             </div>
 
             {contract.next_review && (
               <div>
-                <p className="text-xs text-muted mb-1">Next Review</p>
-                <p className="text-sm">
-                  {new Date(contract.next_review).toLocaleDateString(
-                    "en-US",
-                    { month: "short", day: "numeric", year: "numeric" }
-                  )}
+                <SectionLabel>Next Review</SectionLabel>
+                <p className="text-sm font-headline">
+                  {new Date(contract.next_review).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </p>
               </div>
             )}
 
-            {/* Limits Display */}
-            {(contract.content.hard_limits ||
-              contract.content.soft_limits ||
-              contract.content.curiosities) && (
-              <div className="border-t border-border pt-4 space-y-3">
+            {/* Limits */}
+            {((contract.content.hard_limits?.length ?? 0) > 0 || (contract.content.soft_limits?.length ?? 0) > 0 || (contract.content.curiosities?.length ?? 0) > 0) && (
+              <div className="border-t border-white/5 pt-4 space-y-4">
                 {contract.content.hard_limits && (
                   <div>
-                    <p className="text-xs font-medium text-danger mb-2">
-                      Hard Limits
-                    </p>
-                    <div className="flex flex-wrap gap-2">
+                    <SectionLabel>Hard Limits</SectionLabel>
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {contract.content.hard_limits.map((limit, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-block bg-danger/10 text-danger text-xs px-2 py-1 rounded"
-                        >
+                        <span key={idx} className="text-[10px] font-headline font-bold tracking-widest bg-[#ff3366]/10 text-[#ff3366] border border-[#ff3366]/20 px-2 py-1 rounded">
                           {limit}
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
-
                 {contract.content.soft_limits && (
                   <div>
-                    <p className="text-xs font-medium text-yellow-400 mb-2">
-                      Soft Limits
-                    </p>
-                    <div className="flex flex-wrap gap-2">
+                    <SectionLabel>Soft Limits</SectionLabel>
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {contract.content.soft_limits.map((limit, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-block bg-yellow-400/10 text-yellow-400 text-xs px-2 py-1 rounded"
-                        >
+                        <span key={idx} className="text-[10px] font-headline font-bold tracking-widest bg-warning/10 text-warning border border-warning/20 px-2 py-1 rounded">
                           {limit}
                         </span>
                       ))}
                     </div>
                   </div>
                 )}
-
                 {contract.content.curiosities && (
                   <div>
-                    <p className="text-xs font-medium text-purple mb-2">
-                      Curiosities
-                    </p>
-                    <div className="flex flex-wrap gap-2">
+                    <SectionLabel>Curiosities</SectionLabel>
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {contract.content.curiosities.map((item, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-block bg-purple/10 text-purple text-xs px-2 py-1 rounded"
-                        >
+                        <span key={idx} className="text-[10px] font-headline font-bold tracking-widest bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded">
                           {item}
                         </span>
                       ))}
@@ -421,47 +335,44 @@ export function SettingsView({
               </div>
             )}
           </div>
-        </div>
+        </SectionCard>
       )}
 
       {/* No Contract CTA */}
       {pair && !contract && (
-        <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
-          <Shield className="mx-auto mb-3 text-muted" size={24} />
-          <h3 className="font-semibold mb-2">No Contract Yet</h3>
-          <p className="text-sm text-muted mb-4">
-            Create a contract to establish boundaries, limits, and expectations.
-          </p>
-          <button className="rounded-lg bg-accent/20 border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent/30 transition-colors">
+        <div className="bg-surface-container rounded-xl p-8 text-center border border-outline-variant/10 border-dashed">
+          <Shield className="mx-auto mb-3 text-zinc-600" size={28} />
+          <h3 className="font-headline font-bold mb-1 tracking-tight">No Contract Yet</h3>
+          <p className="text-xs text-muted mb-5 max-w-xs mx-auto">Create a contract to establish boundaries, limits, and expectations.</p>
+          <button className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase">
             Create Contract
           </button>
         </div>
       )}
 
-      {/* Unpair Confirmation Modal */}
+      {/* Unpair Confirm Modal */}
       {showUnpairConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-xl border border-border bg-card p-6 max-w-sm mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="glass-panel rounded-xl border border-[#ff3366]/20 p-6 max-w-sm mx-4 w-full">
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="text-danger" size={20} />
-              <h3 className="text-lg font-semibold">End Pairing?</h3>
+              <AlertTriangle className="text-[#ff3366]" size={20} />
+              <h3 className="text-lg font-headline font-bold tracking-tight">End Pairing?</h3>
             </div>
-            <p className="text-sm text-muted mb-6">
+            <p className="text-sm text-muted mb-6 leading-relaxed">
               This will permanently end your pairing with{" "}
-              <strong>{subProfile?.collar_name || subProfile?.display_name}</strong>.
-              This action cannot be undone.
+              <strong className="text-foreground">{subProfile?.collar_name || subProfile?.display_name}</strong>. This cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowUnpairConfirm(false)}
-                className="flex-1 rounded-lg bg-muted/10 border border-muted px-4 py-2.5 text-sm font-medium text-muted hover:bg-muted/20 transition-colors"
+                className="flex-1 border border-outline-variant/20 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase text-muted hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUnpair}
                 disabled={unpairing}
-                className="flex-1 rounded-lg bg-danger/20 border border-danger px-4 py-2.5 text-sm font-medium text-danger hover:bg-danger/30 transition-colors disabled:opacity-50"
+                className="flex-1 border border-[#ff3366]/30 bg-[#ff3366]/10 text-[#ff3366] py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase hover:bg-[#ff3366]/20 disabled:opacity-50 transition-colors"
               >
                 {unpairing ? "Ending..." : "End Pairing"}
               </button>

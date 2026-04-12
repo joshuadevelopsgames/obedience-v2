@@ -24,12 +24,7 @@ interface Props {
   recentMood: MoodCheckin[];
 }
 
-export function SubSettings({
-  profile,
-  pair,
-  contract,
-  recentMood,
-}: Props) {
+export function SubSettings({ profile, pair, contract, recentMood }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
   const [saving, setSaving] = useState(false);
@@ -43,43 +38,23 @@ export function SubSettings({
   const router = useRouter();
 
   const handleSaveProfile = async () => {
-    if (!displayName.trim() && !collarName.trim()) {
-      toast.error("Please fill in at least one name");
-      return;
-    }
-
+    if (!displayName.trim() && !collarName.trim()) { toast.error("Please fill in at least one name"); return; }
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        display_name: displayName.trim() || null,
-        collar_name: collarName.trim() || null,
-      })
-      .eq("id", profile.id);
-
-    if (!error) {
-      toast.success("Profile updated");
-      router.refresh();
-    } else {
-      toast.error("Failed to update profile");
-    }
+    const { error } = await supabase.from("profiles").update({
+      display_name: displayName.trim() || null,
+      collar_name: collarName.trim() || null,
+    }).eq("id", profile.id);
+    if (!error) { toast.success("Profile updated"); router.refresh(); }
+    else { toast.error("Failed to update profile"); }
     setSaving(false);
   };
 
   const handleTriggerSafeWord = async (level: "yellow" | "red") => {
-    if (!pair) {
-      toast.error("No active pair found");
-      return;
-    }
-
-    await supabase
-      .from("pairs")
-      .update({
-        safe_word_state: level,
-        safe_word_at: new Date().toISOString(),
-      })
-      .eq("id", pair.id);
-
+    if (!pair) { toast.error("No active pair found"); return; }
+    await supabase.from("pairs").update({
+      safe_word_state: level,
+      safe_word_at: new Date().toISOString(),
+    }).eq("id", pair.id);
     setSafeWordState(level);
     toast(
       level === "yellow"
@@ -91,46 +66,15 @@ export function SubSettings({
   };
 
   const handleAddLimit = async () => {
-    if (!newLimit.trim() || !contract) {
-      toast.error("Please enter a limit");
-      return;
-    }
-
+    if (!newLimit.trim() || !contract) { toast.error("Please enter a limit"); return; }
     setAddingLimit(true);
-
-    // Update contract content
-    const limits = contract.content?.[
-      newLimitCategory === "hard"
-        ? "hard_limits"
-        : newLimitCategory === "soft"
-          ? "soft_limits"
-          : "curiosities"
-    ] || [];
-
-    const updated = await supabase
-      .from("contracts")
-      .update({
-        content: {
-          ...contract.content,
-          [newLimitCategory === "hard"
-            ? "hard_limits"
-            : newLimitCategory === "soft"
-              ? "soft_limits"
-              : "curiosities"]: [
-            ...limits,
-            newLimit.trim(),
-          ],
-        },
-      })
-      .eq("id", contract.id);
-
-    if (!updated.error) {
-      setNewLimit("");
-      toast.success("Limit added");
-      router.refresh();
-    } else {
-      toast.error("Failed to add limit");
-    }
+    const key = newLimitCategory === "hard" ? "hard_limits" : newLimitCategory === "soft" ? "soft_limits" : "curiosities";
+    const limits = contract.content?.[key] || [];
+    const updated = await supabase.from("contracts").update({
+      content: { ...contract.content, [key]: [...limits, newLimit.trim()] },
+    }).eq("id", contract.id);
+    if (!updated.error) { setNewLimit(""); toast.success("Limit added"); router.refresh(); }
+    else { toast.error("Failed to add limit"); }
     setAddingLimit(false);
   };
 
@@ -146,295 +90,253 @@ export function SubSettings({
   const softLimits = contract?.content?.soft_limits || [];
   const curiosities = contract?.content?.curiosities || [];
 
+  const SectionCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-surface-low rounded-xl border border-outline-variant/10 p-6 ${className}`}>
+      {children}
+    </div>
+  );
+
+  const SectionHeading = ({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) => (
+    <div className="flex items-center gap-2 mb-5">
+      <span className="text-primary">{icon}</span>
+      <h2 className="text-xs font-headline font-bold tracking-widest uppercase">{children}</h2>
+    </div>
+  );
+
+  const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-[10px] font-label uppercase tracking-[0.2em] text-muted mb-1">{children}</p>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-8 max-w-2xl">
+      {/* Hero */}
       <div>
-        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
-          <Settings size={24} />
-          Settings
+        <h1 className="text-4xl font-headline font-bold tracking-tighter leading-[0.9] mb-2">
+          OPERATIVE<br />
+          <span className="text-pink italic">SETTINGS</span>
         </h1>
-        <p className="text-sm text-muted">Manage your profile and preferences</p>
+        <p className="text-muted text-sm">Manage your profile, limits, and safe word protocols.</p>
       </div>
 
-      {/* Profile Section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-lg font-semibold">Profile</h2>
-
-        <div className="space-y-3">
+      {/* Profile */}
+      <SectionCard>
+        <SectionHeading icon={<Settings size={14} />}>Profile</SectionHeading>
+        <div className="space-y-5">
           <div>
-            <label className="text-xs font-medium text-muted">Display Name</label>
+            <SectionLabel>Display Name</SectionLabel>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your public name"
-              className="w-full mt-1 rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
             />
           </div>
-
           <div>
-            <label className="text-xs font-medium text-muted">Collar Name</label>
+            <SectionLabel>Collar Name</SectionLabel>
             <input
               type="text"
               value={collarName}
               onChange={(e) => setCollarName(e.target.value)}
               placeholder="What does your Mistress call you?"
-              className="w-full mt-1 rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
             />
           </div>
-
           <button
             onClick={handleSaveProfile}
             disabled={saving}
-            className="w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-black hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Profile"}
           </button>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Safe Word Section */}
+      {/* Safe Word */}
       {pair && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Shield size={18} className="text-danger" />
-            Safe Word
-          </h2>
-
-          <div className="space-y-2">
-            <p className="text-sm text-muted">Current status:</p>
-            <div
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+        <SectionCard>
+          <SectionHeading icon={<Shield size={14} />}>Safe Word</SectionHeading>
+          <div className="space-y-4">
+            <div>
+              <SectionLabel>Current Status</SectionLabel>
+              <div className={`rounded-xl px-4 py-3 text-sm font-headline font-bold tracking-tight ${
                 pair.safe_word_state === "red"
-                  ? "bg-danger/10 text-danger"
+                  ? "bg-[#ff3366]/10 text-[#ff3366] border border-[#ff3366]/20"
                   : pair.safe_word_state === "yellow"
-                    ? "bg-yellow-500/10 text-yellow-400"
-                    : "bg-success/10 text-success"
-              }`}
-            >
-              {pair.safe_word_state === "red"
-                ? "🔴 Red — Full Stop"
-                : pair.safe_word_state === "yellow"
-                  ? "🟡 Yellow — Slow Down"
+                    ? "bg-warning/10 text-warning border border-warning/20"
+                    : "bg-success/10 text-success border border-success/20"
+              }`}>
+                {pair.safe_word_state === "red" ? "🔴 Red — Full Stop"
+                  : pair.safe_word_state === "yellow" ? "🟡 Yellow — Slow Down"
                   : "🟢 Green — Normal"}
+              </div>
             </div>
+
+            {pair.safe_word_state === "green" && (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleTriggerSafeWord("yellow")}
+                  className="flex-1 border border-warning/30 bg-warning/5 text-warning py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase hover:bg-warning/10 transition-colors safe-word-pulse"
+                >
+                  🟡 Slow Down
+                </button>
+                <button
+                  onClick={() => handleTriggerSafeWord("red")}
+                  className="flex-1 border border-[#ff3366]/30 bg-[#ff3366]/5 text-[#ff3366] py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase hover:bg-[#ff3366]/10 transition-colors safe-word-pulse"
+                >
+                  🔴 Full Stop
+                </button>
+              </div>
+            )}
+
+            <p className="text-xs text-muted">Your Mistress is notified immediately when a safe word is triggered.</p>
           </div>
-
-          {pair.safe_word_state === "green" && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleTriggerSafeWord("yellow")}
-                className="flex-1 rounded-lg border border-yellow-500/30 bg-yellow-500/5 py-2 text-xs font-medium text-yellow-400 hover:bg-yellow-500/10 transition-colors"
-              >
-                🟡 Slow Down
-              </button>
-              <button
-                onClick={() => handleTriggerSafeWord("red")}
-                className="flex-1 rounded-lg border border-danger/30 bg-danger/5 py-2 text-xs font-medium text-danger hover:bg-danger/10 transition-colors"
-              >
-                🔴 Full Stop
-              </button>
-            </div>
-          )}
-
-          <p className="text-xs text-muted">
-            Your Mistress will be notified immediately when you trigger a safe word.
-          </p>
-        </div>
+        </SectionCard>
       )}
 
-      {/* Limits Section */}
+      {/* Limits */}
       {contract && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Limits</h2>
+        <SectionCard>
+          <div className="flex items-center justify-between mb-5">
+            <SectionHeading icon={<AlertOctagon size={14} />}>Limits</SectionHeading>
             <button
               onClick={() => setShowLimitsForm(!showLimitsForm)}
-              className="text-xs font-medium text-accent hover:text-accent/90"
+              className="text-[10px] font-headline font-bold tracking-widest uppercase text-primary hover:underline"
             >
               {showLimitsForm ? "Cancel" : "+ Add"}
             </button>
           </div>
 
           {showLimitsForm && (
-            <div className="rounded-lg bg-background p-3 space-y-2">
+            <div className="bg-surface-container rounded-xl p-4 mb-4 space-y-3 border border-outline-variant/10">
               <div>
-                <label className="text-xs font-medium text-muted">Category</label>
+                <SectionLabel>Category</SectionLabel>
                 <select
                   value={newLimitCategory}
-                  onChange={(e) =>
-                    setNewLimitCategory(
-                      e.target.value as "hard" | "soft" | "curiosity"
-                    )
-                  }
-                  className="w-full mt-1 rounded-lg bg-card border border-border px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  onChange={(e) => setNewLimitCategory(e.target.value as "hard" | "soft" | "curiosity")}
+                  className="w-full mt-1 bg-surface-container-high border border-outline-variant/20 rounded-sm px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="hard">Hard Limit</option>
                   <option value="soft">Soft Limit</option>
                   <option value="curiosity">Curiosity</option>
                 </select>
               </div>
-
               <div>
-                <label className="text-xs font-medium text-muted">Limit</label>
+                <SectionLabel>Limit</SectionLabel>
                 <input
                   type="text"
                   value={newLimit}
                   onChange={(e) => setNewLimit(e.target.value)}
-                  placeholder="Enter limit..."
-                  className="w-full mt-1 rounded-lg bg-card border border-border px-2 py-1 text-xs text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-accent"
+                  placeholder="Enter limit…"
+                  className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-1.5 text-xs text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
-
               <button
                 onClick={handleAddLimit}
                 disabled={addingLimit || !newLimit.trim()}
-                className="w-full rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-black hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="btn-gradient w-full py-2 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase disabled:opacity-50"
               >
                 {addingLimit ? "Adding..." : "Add Limit"}
               </button>
             </div>
           )}
 
-          {/* Hard Limits */}
-          {hardLimits.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-danger mb-2">Hard Limits</p>
-              <div className="space-y-1">
-                {hardLimits.map((limit, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg bg-danger/10 border border-danger/30 px-3 py-2 text-xs text-foreground flex items-center gap-2"
-                  >
-                    <AlertOctagon size={12} className="text-danger flex-shrink-0" />
-                    {limit}
-                  </div>
-                ))}
+          <div className="space-y-4">
+            {hardLimits.length > 0 && (
+              <div>
+                <SectionLabel>Hard Limits</SectionLabel>
+                <div className="space-y-1.5 mt-2">
+                  {hardLimits.map((limit, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-[#ff3366]/5 border border-[#ff3366]/20 rounded-xl px-3 py-2 text-xs text-foreground">
+                      <AlertOctagon size={10} className="text-[#ff3366] flex-shrink-0" />
+                      {limit}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Soft Limits */}
-          {softLimits.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-yellow-400 mb-2">Soft Limits</p>
-              <div className="space-y-1">
-                {softLimits.map((limit, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg bg-yellow-500/10 border border-yellow-500/30 px-3 py-2 text-xs text-foreground flex items-center gap-2"
-                  >
-                    <AlertTriangle size={12} className="text-yellow-400 flex-shrink-0" />
-                    {limit}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Curiosities */}
-          {curiosities.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-purple mb-2">Curiosities</p>
-              <div className="space-y-1">
-                {curiosities.map((limit, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg bg-purple/10 border border-purple/30 px-3 py-2 text-xs text-foreground"
-                  >
-                    {limit}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {hardLimits.length === 0 &&
-            softLimits.length === 0 &&
-            curiosities.length === 0 && (
-              <p className="text-xs text-muted text-center py-4">
-                No limits set yet. Add some to establish boundaries with your Mistress.
-              </p>
             )}
-        </div>
+            {softLimits.length > 0 && (
+              <div>
+                <SectionLabel>Soft Limits</SectionLabel>
+                <div className="space-y-1.5 mt-2">
+                  {softLimits.map((limit, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-warning/5 border border-warning/20 rounded-xl px-3 py-2 text-xs text-foreground">
+                      <AlertTriangle size={10} className="text-warning flex-shrink-0" />
+                      {limit}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {curiosities.length > 0 && (
+              <div>
+                <SectionLabel>Curiosities</SectionLabel>
+                <div className="space-y-1.5 mt-2">
+                  {curiosities.map((limit, idx) => (
+                    <div key={idx} className="bg-primary/5 border border-primary/20 rounded-xl px-3 py-2 text-xs text-foreground">
+                      {limit}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {hardLimits.length === 0 && softLimits.length === 0 && curiosities.length === 0 && (
+              <p className="text-xs text-muted text-center py-4">No limits set yet. Add some to establish boundaries.</p>
+            )}
+          </div>
+        </SectionCard>
       )}
 
       {/* Pair Info */}
       {pair && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Users size={18} className="text-purple" />
-            Pair Info
-          </h2>
-
-          <div className="space-y-3">
+        <SectionCard>
+          <SectionHeading icon={<Users size={14} />}>Pair Info</SectionHeading>
+          <div className="space-y-4">
             <div>
-              <p className="text-xs font-medium text-muted mb-1">Status</p>
-              <p className="text-sm font-medium capitalize">
+              <SectionLabel>Status</SectionLabel>
+              <p className={`text-sm font-headline font-bold ${pair.status === "active" ? "text-success" : "text-muted"}`}>
                 {pair.status === "active" && "🟢 Active"}
                 {pair.status === "paused" && "🟡 Paused"}
                 {pair.status === "ended" && "🔴 Ended"}
               </p>
             </div>
-
             <div>
-              <p className="text-xs font-medium text-muted mb-1">Pair Code</p>
-              <div className="flex gap-2">
-                <div className="flex-1 rounded-lg bg-background border border-border px-3 py-2 text-sm text-muted font-mono">
-                  {pair.id}
+              <SectionLabel>Pair Code</SectionLabel>
+              <div className="flex gap-2 mt-2">
+                <div className="flex-1 bg-surface-container border border-outline-variant/20 rounded-sm px-4 py-2.5">
+                  <code className="text-sm font-mono text-primary">{pair.id}</code>
                 </div>
                 <button
                   onClick={copyPairCode}
-                  className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-black hover:bg-accent/90 transition-colors flex items-center gap-1"
+                  className="btn-gradient px-4 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-1"
                 >
-                  {copied ? (
-                    <>
-                      <Check size={14} /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={14} /> Copy
-                    </>
-                  )}
+                  {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
                 </button>
               </div>
-              <p className="text-xs text-muted mt-1">
-                Share this code with your Mistress to connect.
-              </p>
+              <p className="text-xs text-muted mt-2">Share this with your Mistress to connect.</p>
             </div>
           </div>
-        </div>
+        </SectionCard>
       )}
 
       {/* Mood History */}
       {recentMood.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Heart size={18} className="text-pink-400" />
-            Mood History
-          </h2>
-
+        <SectionCard>
+          <SectionHeading icon={<Heart size={14} />}>Mood History</SectionHeading>
           <div className="space-y-2">
             {recentMood.slice(0, 5).map((checkin) => (
-              <div
-                key={checkin.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-background"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{checkin.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted">
-                      {new Date(checkin.created_at).toLocaleDateString()}
-                    </p>
-                    {checkin.note && (
-                      <p className="text-xs text-foreground">{checkin.note}</p>
-                    )}
-                  </div>
+              <div key={checkin.id} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                <span className="text-xl w-7 text-center">{checkin.emoji}</span>
+                <div className="flex-1">
+                  <p className="text-[10px] font-label uppercase tracking-widest text-muted">
+                    {new Date(checkin.created_at).toLocaleDateString()}
+                  </p>
+                  {checkin.note && <p className="text-xs text-foreground mt-0.5">{checkin.note}</p>}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
       )}
     </div>
   );
