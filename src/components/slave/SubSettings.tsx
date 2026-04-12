@@ -11,6 +11,8 @@ import {
   Copy,
   Check,
   Sparkles,
+  Pen,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -51,8 +53,29 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
   const [newLimitCategory, setNewLimitCategory] = useState<"hard" | "soft" | "curiosity">("hard");
   const [addingLimit, setAddingLimit] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [signing, setSigning] = useState(false);
   const supabase = createClient();
   const router = useRouter();
+
+  const handleCountersign = async () => {
+    if (!contract) return;
+    setSigning(true);
+    try {
+      const res = await fetch('/api/contracts/sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contractId: contract.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success('Contract signed — the dynamic is now in force.');
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sign contract');
+    } finally {
+      setSigning(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!displayName.trim() && !collarName.trim()) { toast.error("Please fill in at least one name"); return; }
@@ -212,6 +235,27 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
       )}
 
       {/* Limits */}
+      {/* Unsigned contract banner */}
+      {contract && !contract.slave_signed && (
+        <div className="bg-warning/5 border border-warning/30 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Pen size={16} className="text-warning flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-headline font-bold tracking-tight">Contract awaiting your signature</p>
+              <p className="text-xs text-muted mt-0.5">Your Mistress has created and signed a contract. Review the terms in your Preferences, then countersign to make it binding.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleCountersign}
+            disabled={signing}
+            className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-2 disabled:opacity-50 flex-shrink-0"
+          >
+            {signing ? <Loader2 size={12} className="animate-spin" /> : <Pen size={12} />}
+            {signing ? 'Signing…' : 'Countersign'}
+          </button>
+        </div>
+      )}
+
       {contract && (
         <SectionCard>
           <div className="flex items-center justify-between mb-5">

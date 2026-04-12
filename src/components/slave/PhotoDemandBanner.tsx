@@ -211,7 +211,6 @@ export function PhotoDemandBanner({ userId, initialDemand }: PhotoDemandBannerPr
             ref={fileInputRef}
             className="hidden"
             onChange={handleFileSelect}
-            capture="user"
           />
 
           {!file ? (

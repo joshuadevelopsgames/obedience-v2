@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { KinkLibrary } from "@/components/shared/KinkLibrary";
 import LimitsLibrary from "@/components/shared/LimitsLibrary";
+import { ContractModal } from "@/components/mistress/ContractModal";
 import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink } from "@/types/database";
 
 interface Limit {
@@ -69,6 +70,7 @@ export function SettingsView({
   const [copied, setCopied] = useState(false);
   const [showUnpairConfirm, setShowUnpairConfirm] = useState(false);
   const [unpairing, setUnpairing] = useState(false);
+  const [showContractModal, setShowContractModal] = useState(false);
   const supabase = createClient();
   const router = useRouter();
 
@@ -365,11 +367,24 @@ export function SettingsView({
         <div className="bg-surface-container rounded-xl p-8 text-center border border-outline-variant/10 border-dashed">
           <Shield className="mx-auto mb-3 text-zinc-600" size={28} />
           <h3 className="font-headline font-bold mb-1 tracking-tight">No Contract Yet</h3>
-          <p className="text-xs text-muted mb-5 max-w-xs mx-auto">Create a contract to establish boundaries, limits, and expectations.</p>
-          <button className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase">
+          <p className="text-xs text-muted mb-5 max-w-xs mx-auto">
+            Grok will draft one based on your kinks and limits — review and edit before signing.
+          </p>
+          <button
+            onClick={() => setShowContractModal(true)}
+            className="btn-gradient px-5 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase"
+          >
             Create Contract
           </button>
         </div>
+      )}
+
+      {showContractModal && pair && (
+        <ContractModal
+          pairId={pair.id}
+          slaveName={subProfile?.collar_name || subProfile?.display_name || "operative"}
+          onClose={() => setShowContractModal(false)}
+        />
       )}
 
       {/* Kink Library */}
