@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const { pairId, slaveId, prompt, windowSeconds = 300 } = await req.json();
+    const { pairId, slaveId, prompt, windowSeconds = 300, punishmentPreset = null } = await req.json();
 
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         window_seconds: windowSeconds,
         expires_at: expiresAt,
         status: 'pending',
+        punishment_preset: punishmentPreset || null,
       })
       .select()
       .single();

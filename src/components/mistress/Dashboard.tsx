@@ -287,49 +287,49 @@ export function MistressDashboard({
             {aiSuggestions.map((task) => (
               <div
                 key={task.id}
-                className="bg-surface-low p-6 rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 flex items-center justify-between glow-border-primary group"
+                className="bg-surface-low p-4 sm:p-6 rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 flex items-center justify-between gap-3 glow-border-primary group overflow-hidden"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary border border-outline-variant/10">
-                    <Sparkles size={20} />
+                <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary border border-outline-variant/10 flex-shrink-0">
+                    <Sparkles size={18} />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-headline font-bold tracking-tight">{task.title}</h4>
-                    <div className="flex items-center gap-4 mt-1">
-                      <span className={`text-xs font-headline font-medium ${categoryColors[task.category] || "text-muted"}`}>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base sm:text-lg font-headline font-bold tracking-tight truncate">{task.title}</h4>
+                    <div className="flex items-center gap-2 sm:gap-4 mt-1 flex-wrap">
+                      <span className={`text-[10px] sm:text-xs font-headline font-medium ${categoryColors[task.category] || "text-muted"}`}>
                         {task.category.replace("_", " ").toUpperCase()}
                       </span>
-                      <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                      <span className="text-zinc-500 text-xs font-headline">
+                      <span className="w-1 h-1 rounded-full bg-zinc-700 flex-shrink-0" />
+                      <span className="text-zinc-500 text-[10px] sm:text-xs font-headline">
                         {"●".repeat(task.difficulty)}{"○".repeat(5 - task.difficulty)}
                       </span>
-                      <span className="w-1 h-1 rounded-full bg-zinc-700" />
-                      <span className="text-primary text-xs font-headline font-bold">
+                      <span className="w-1 h-1 rounded-full bg-zinc-700 flex-shrink-0" />
+                      <span className="text-primary text-[10px] sm:text-xs font-headline font-bold">
                         +{task.xp_reward} XP
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleApprove(task)}
-                    className="p-2 text-success hover:bg-success/10 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 text-success hover:bg-success/10 rounded-lg transition-colors"
                     title="Approve & assign"
                   >
-                    <ThumbsUp size={18} />
+                    <ThumbsUp size={16} />
                   </button>
                   <button
-                    className="p-2 text-zinc-500 hover:bg-white/5 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 text-zinc-500 hover:bg-white/5 rounded-lg transition-colors"
                     title="Edit"
                   >
-                    <Edit3 size={18} />
+                    <Edit3 size={16} />
                   </button>
                   <button
                     onClick={() => handleReject(task)}
-                    className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
                     title="Reject"
                   >
-                    <ThumbsDown size={18} />
+                    <ThumbsDown size={16} />
                   </button>
                 </div>
               </div>

@@ -17,41 +17,42 @@ export default async function SubMessagesPage() {
 
   if (!profile || profile.role !== "slave") redirect("/dashboard");
 
-  // Get the pair
-  const { data: pair } = await supabase
+  // Fetch ALL active pairs for this slave
+  const { data: pairs } = await supabase
     .from("pairs")
     .select("*")
     .eq("slave_id", user.id)
     .eq("status", "active")
-    .single();
+    .order("created_at", { ascending: true });
 
-  // Fetch messages
-  const { data: messages } = pair
+  // For each pair, fetch the partner (mistress) profile
+  const pairsWithPartners = await Promise.all(
+    (pairs || []).map(async (pair) => {
+      const { data: partnerProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", pair.mistress_id)
+        .single();
+      return { pair, partnerProfile: partnerProfile || null };
+    })
+  );
+
+  // Preload messages for the first pair only
+  const firstPair = pairsWithPartners[0]?.pair;
+  const { data: initialMessages } = firstPair
     ? await supabase
         .from("messages")
         .select("*")
-        .eq("pair_id", pair.id)
+        .eq("pair_id", firstPair.id)
         .order("created_at", { ascending: true })
         .limit(100)
     : { data: [] };
 
-  // Fetch partner profile
-  let partnerProfile = null;
-  if (pair) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", pair.mistress_id)
-      .single();
-    partnerProfile = data;
-  }
-
   return (
     <MessagesView
-      pair={pair}
-      profile={profile}
-      partnerProfile={partnerProfile}
-      initialMessages={messages || []}
+      currentProfile={profile}
+      pairsWithPartners={pairsWithPartners}
+      initialMessages={initialMessages || []}
     />
   );
 }

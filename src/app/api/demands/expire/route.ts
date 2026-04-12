@@ -28,10 +28,47 @@ export async function POST(req: Request) {
     // Mark as expired
     await supabase.from('photo_demands').update({ status: 'expired' }).eq('id', demandId);
 
-    if (!XAI_API_KEY) return NextResponse.json({ success: true, punishment: null });
-
-    // Use admin client to get full pair context for punishment generation
+    // Use admin client for full context
     const admin = createAdminClient();
+
+    // ── Fast path: mistress pre-approved a punishment preset ────────────────
+    if (demand.punishment_preset) {
+      const preset = demand.punishment_preset as {
+        title: string;
+        description: string;
+        category?: string;
+        difficulty?: number;
+        xp_reward?: number;
+        proof_type?: string;
+        duration_minutes?: number;
+      };
+
+      const { data: punishment } = await admin.from('tasks').insert({
+        pair_id: demand.pair_id,
+        assigned_to: demand.slave_id,
+        assigned_by: demand.mistress_id,
+        title: preset.title,
+        description: preset.description,
+        category: preset.category || 'obedience',
+        difficulty: preset.difficulty ?? 3,
+        xp_reward: 0,
+        proof_type: preset.proof_type || 'photo',
+        duration_minutes: preset.duration_minutes ?? 15,
+        is_punishment: true,
+        status: 'assigned',
+      }).select().single();
+
+      if (punishment) {
+        await admin.from('photo_demands')
+          .update({ auto_punishment_issued: true, punishment_id: punishment.id })
+          .eq('id', demandId);
+      }
+
+      return NextResponse.json({ success: true, punishment });
+    }
+    // ── Slow path: call Grok to generate punishment ─────────────────────────
+
+    if (!XAI_API_KEY) return NextResponse.json({ success: true, punishment: null });
 
     const { data: pair } = await admin.from('pairs').select('*').eq('id', demand.pair_id).single();
     const { data: slaveProfile } = await admin.from('profiles').select('*').eq('id', demand.slave_id).single();
