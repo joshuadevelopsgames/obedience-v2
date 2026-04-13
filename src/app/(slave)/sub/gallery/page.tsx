@@ -55,7 +55,7 @@ export default async function SubGalleryPage() {
 
     if (signedUrls) {
       for (const item of signedUrls) {
-        if (item.signedUrl) signedUrlMap[item.path] = item.signedUrl;
+        if (item.signedUrl && item.path) signedUrlMap[item.path] = item.signedUrl;
       }
     }
   }
