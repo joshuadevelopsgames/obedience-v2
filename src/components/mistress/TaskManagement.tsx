@@ -65,6 +65,16 @@ function ProofPhotoViewer({ storagePath, proofType }: { storagePath: string; pro
       </a>
     );
   }
+  if (proofType === 'video') {
+    return (
+      <video
+        src={url}
+        controls
+        className="w-full max-h-64 rounded-xl bg-black"
+        preload="metadata"
+      />
+    );
+  }
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:text-pink transition-colors font-headline">
       View {proofType} evidence ↗
