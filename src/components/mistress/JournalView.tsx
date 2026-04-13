@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { BookOpen, Sparkles, Loader2 } from "lucide-react";
+import { BookOpen, Sparkles, Loader2, BarChart2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -100,7 +100,7 @@ export function JournalView({
 
   const tabItems = [
     { value: "journal" as const, label: "Journal", icon: <BookOpen size={14} /> },
-    { value: "mood" as const, label: "Mood Data", icon: <span className="text-sm">📊</span> },
+    { value: "mood" as const, label: "Mood Data", icon: <BarChart2 size={14} /> },
   ];
 
   return (
