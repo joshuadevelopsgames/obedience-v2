@@ -72,6 +72,7 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
   const [addingLimit, setAddingLimit] = useState(false);
   const [copied, setCopied] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"profile" | "dynamic">("profile");
   const supabase = createClient();
   const router = useRouter();
 
@@ -159,6 +160,26 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
         </h1>
         <p className="text-muted text-sm">Manage your profile, limits, and safe word protocols.</p>
       </div>
+
+      {/* Tab Bar */}
+      <div className="flex gap-6 border-b border-white/5">
+        {(["profile", "dynamic"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSettingsTab(tab)}
+            className={`font-label text-xs font-bold uppercase tracking-widest pb-3 transition-colors ${
+              settingsTab === tab
+                ? "text-primary border-b-2 border-primary/40 -mb-px"
+                : "text-zinc-500 hover:text-foreground"
+            }`}
+          >
+            {tab === "profile" ? "Profile" : "Dynamic"}
+          </button>
+        ))}
+      </div>
+
+      {/* Profile Tab */}
+      {settingsTab === "profile" && (<>
 
       {/* Profile */}
       <SectionCard>
@@ -382,6 +403,11 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
         </SectionCard>
       )}
 
+      </>)} {/* end settingsTab === "profile" */}
+
+      {/* Dynamic Tab */}
+      {settingsTab === "dynamic" && (<>
+
       {/* Kink Library */}
       <SectionCard>
         <SectionHeading icon={<Sparkles size={14} />}>Kink Library</SectionHeading>
@@ -432,6 +458,8 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
           </div>
         </SectionCard>
       )}
+
+      </>)} {/* end settingsTab === "dynamic" */}
     </div>
   );
 }

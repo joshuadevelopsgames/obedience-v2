@@ -75,6 +75,7 @@ export function SettingsView({
   const [showUnpairConfirm, setShowUnpairConfirm] = useState(false);
   const [unpairing, setUnpairing] = useState(false);
   const [showContractModal, setShowContractModal] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"profile" | "dynamic">("profile");
   const supabase = createClient();
   const router = useRouter();
 
@@ -147,6 +148,26 @@ export function SettingsView({
         <p className="text-muted text-sm">Configure your dominance profile and dynamic preferences.</p>
       </div>
 
+      {/* Tab Bar */}
+      <div className="flex gap-6 border-b border-white/5">
+        {(["profile", "dynamic"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setSettingsTab(tab)}
+            className={`font-label text-xs font-bold uppercase tracking-widest pb-3 transition-colors ${
+              settingsTab === tab
+                ? "text-primary border-b-2 border-primary/40 -mb-px"
+                : "text-zinc-500 hover:text-foreground"
+            }`}
+          >
+            {tab === "profile" ? "Profile" : "Dynamic"}
+          </button>
+        ))}
+      </div>
+
+      {/* Profile Tab */}
+      {settingsTab === "profile" && (<>
+
       {/* Profile */}
       <SectionCard>
         <div className="flex items-center gap-2 mb-5">
@@ -171,6 +192,58 @@ export function SettingsView({
           </button>
         </div>
       </SectionCard>
+
+      {/* Pair Info */}
+      {pair && subProfile && (
+        <SectionCard>
+          <div className="flex items-center gap-2 mb-5">
+            <Users size={16} className="text-primary" />
+            <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Pair Information</h2>
+          </div>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <SectionLabel>Submissive</SectionLabel>
+                <p className="font-headline font-bold text-sm">{subProfile.collar_name || subProfile.display_name}</p>
+              </div>
+              <div>
+                <SectionLabel>Status</SectionLabel>
+                <p className={`font-headline font-bold text-sm capitalize ${pair.status === "active" ? "text-success" : "text-muted"}`}>
+                  {pair.status}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <SectionLabel>Your Pair Code</SectionLabel>
+              <div className="flex gap-2 mt-2">
+                <div className="flex-1 bg-surface-container border border-outline-variant/20 rounded-sm px-4 py-2.5">
+                  <code className="text-sm font-mono text-primary">{pairCode}</code>
+                </div>
+                <button
+                  onClick={handleCopyPairCode}
+                  className="btn-gradient px-4 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-1"
+                >
+                  {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowUnpairConfirm(true)}
+              className="w-full border border-[#ff3366]/30 bg-[#ff3366]/5 text-[#ff3366] py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-[#ff3366]/10 transition-colors"
+            >
+              <LogOut size={14} />
+              End Pairing
+            </button>
+          </div>
+        </SectionCard>
+      )}
+
+      </>)} {/* end settingsTab === "profile" */}
+
+      {/* Dynamic Tab */}
+      {settingsTab === "dynamic" && (<>
 
       {/* Dynamic Preferences */}
       <SectionCard>
@@ -241,54 +314,6 @@ export function SettingsView({
           </button>
         </div>
       </SectionCard>
-
-      {/* Pair Info */}
-      {pair && subProfile && (
-        <SectionCard>
-          <div className="flex items-center gap-2 mb-5">
-            <Users size={16} className="text-primary" />
-            <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Pair Information</h2>
-          </div>
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <SectionLabel>Submissive</SectionLabel>
-                <p className="font-headline font-bold text-sm">{subProfile.collar_name || subProfile.display_name}</p>
-                <p className="text-xs text-muted mt-0.5">Level {subProfile.level}</p>
-              </div>
-              <div>
-                <SectionLabel>Status</SectionLabel>
-                <p className={`font-headline font-bold text-sm capitalize ${pair.status === "active" ? "text-success" : "text-muted"}`}>
-                  {pair.status}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <SectionLabel>Your Pair Code</SectionLabel>
-              <div className="flex gap-2 mt-2">
-                <div className="flex-1 bg-surface-container border border-outline-variant/20 rounded-sm px-4 py-2.5">
-                  <code className="text-sm font-mono text-primary">{pairCode}</code>
-                </div>
-                <button
-                  onClick={handleCopyPairCode}
-                  className="btn-gradient px-4 py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center gap-1"
-                >
-                  {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowUnpairConfirm(true)}
-              className="w-full border border-[#ff3366]/30 bg-[#ff3366]/5 text-[#ff3366] py-2.5 rounded-sm text-[10px] font-headline font-bold tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-[#ff3366]/10 transition-colors"
-            >
-              <LogOut size={14} />
-              End Pairing
-            </button>
-          </div>
-        </SectionCard>
-      )}
 
       {/* Contract */}
       {pair && contract && (
@@ -441,6 +466,8 @@ export function SettingsView({
           />
         </div>
       )}
+
+      </>)} {/* end settingsTab === "dynamic" */}
 
       {/* Unpair Confirm Modal */}
       {showUnpairConfirm && (

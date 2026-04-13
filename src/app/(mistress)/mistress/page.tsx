@@ -36,14 +36,23 @@ export default async function MistressPage() {
     subProfile = data;
   }
 
-  // Get recent tasks
+  // Get recent tasks (non-suggested)
   const { data: tasks } = pair
     ? await supabase
         .from("tasks")
         .select("*")
         .eq("pair_id", pair.id)
+        .neq("status", "suggested")
         .order("created_at", { ascending: false })
         .limit(10)
+    : { data: [] };
+
+  // Get proofs for tasks that are pending review
+  const pendingTaskIds = (tasks || [])
+    .filter((t) => t.status === "proof_submitted")
+    .map((t) => t.id);
+  const { data: proofs } = pendingTaskIds.length > 0
+    ? await supabase.from("proofs").select("*").in("task_id", pendingTaskIds)
     : { data: [] };
 
   // Get suggested tasks (AI generated, not yet approved)
@@ -87,6 +96,7 @@ export default async function MistressPage() {
       subProfile={subProfile}
       pair={pair}
       tasks={tasks || []}
+      proofs={proofs || []}
       suggestions={suggestions || []}
       recentMood={recentMood || []}
       activeDemand={activeDemand ?? null}

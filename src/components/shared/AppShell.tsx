@@ -14,7 +14,6 @@ import {
   Shield,
   MessageCircle,
   SlidersHorizontal,
-  Sparkles,
   LogOut,
   Lock,
   HelpCircle,
@@ -41,8 +40,7 @@ interface AppShellProps {
 
 const mistressNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
-  { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/mistress/tasks", icon: ListTodo, label: "Command Center" },
   { href: "/mistress/rewards", icon: Gift, label: "Rewards" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
@@ -62,8 +60,7 @@ const slaveNav = [
 // Mobile bottom bar — Comms moved to floating FAB
 const mistressMobileNav = [
   { href: "/mistress", icon: LayoutDashboard, label: "Home" },
-  { href: "/mistress/discover", icon: Sparkles, label: "Discover" },
-  { href: "/mistress/tasks", icon: ListTodo, label: "Tasks" },
+  { href: "/mistress/tasks", icon: ListTodo, label: "Command" },
   { href: "/mistress/rewards", icon: Gift, label: "Rewards" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
 ];
@@ -71,7 +68,6 @@ const mistressMobileNav = [
 const slaveMobileNav = [
   { href: "/sub", icon: LayoutDashboard, label: "Home" },
   { href: "/sub/tasks", icon: ListTodo, label: "Tasks" },
-  { href: "/sub/rituals", icon: Shield, label: "Chamber" },
   { href: "/sub/rewards", icon: Gift, label: "Vault" },
   { href: "/sub/journal", icon: BookOpen, label: "Journal" },
 ];
@@ -187,19 +183,13 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
           <div className="hidden lg:flex items-center gap-3 pl-6 border-l border-white/10">
             <div className="text-right">
               <p className="text-xs font-bold font-headline tracking-wider">{tierLabel}</p>
-              <p className="text-[10px] text-primary">Level {profile.level}</p>
             </div>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full border-2 border-primary/30 bg-surface-container flex items-center justify-center overflow-hidden">
-                {isMistress ? (
-                  <Crown size={18} className="text-primary" />
-                ) : (
-                  <Heart size={18} className="text-pink" />
-                )}
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-black flex items-center justify-center">
-                <span className="text-[8px] font-bold text-black">{String(profile.level).padStart(2, "0")}</span>
-              </div>
+            <div className="w-10 h-10 rounded-full border-2 border-primary/30 bg-surface-container flex items-center justify-center overflow-hidden">
+              {isMistress ? (
+                <Crown size={18} className="text-primary" />
+              ) : (
+                <Heart size={18} className="text-pink" />
+              )}
             </div>
           </div>
         </div>
@@ -245,13 +235,6 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
               );
             })}
           </nav>
-
-          {/* CTA Button */}
-          <div className="px-8">
-            <button className="btn-gradient w-full py-4 rounded-sm text-xs tracking-widest font-headline font-bold uppercase">
-              {isMistress ? "Initiate Protocol" : "Report In"}
-            </button>
-          </div>
 
           {/* Bottom links */}
           <div className="px-4 pb-8 flex flex-col gap-1">

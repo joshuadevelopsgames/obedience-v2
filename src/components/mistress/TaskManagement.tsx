@@ -75,7 +75,7 @@ function ProofPhotoViewer({ storagePath, proofType }: { storagePath: string; pro
 export function TaskManagement({ pair, profile, tasks: initialTasks, proofs }: Props) {
   const router = useRouter();
   const supabase = createClient();
-  const [activeTab, setActiveTab] = useState<"drafts" | "active" | "pending" | "completed" | "all">("drafts");
+  const [activeTab, setActiveTab] = useState<"drafts" | "active" | "pending" | "completed" | "all">("active");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [expandedProofs, setExpandedProofs] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -245,10 +245,7 @@ export function TaskManagement({ pair, profile, tasks: initialTasks, proofs }: P
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-headline font-bold tracking-tight">TASK MANAGEMENT</h1>
-          <p className="text-sm text-muted mt-1">Create and review directives for your submissive</p>
-        </div>
+        <h2 className="text-xl font-headline font-bold tracking-tight text-zinc-300 uppercase">Active Protocols</h2>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-sm text-xs font-headline font-bold tracking-widest uppercase"
@@ -490,7 +487,12 @@ export function TaskManagement({ pair, profile, tasks: initialTasks, proofs }: P
 
                   <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                     <span className={`text-[10px] font-headline font-bold tracking-[0.2em] px-3 py-1 rounded border ${statusStyles[task.status] || "text-zinc-400 bg-zinc-400/5 border-zinc-400/20"}`}>
-                      {isDraft ? "DRAFT" : task.status.replace("_", " ").toUpperCase()}
+                      {isDraft ? "DRAFT" : (
+                        ["assigned", "in_progress"].includes(task.status) ? "ACTIVE" :
+                        task.status === "proof_submitted" ? "SUBMITTED" :
+                        ["approved", "completed"].includes(task.status) ? "DONE" :
+                        task.status.replace("_", " ").toUpperCase()
+                      )}
                     </span>
 
                     {/* Draft: Deploy + Delete */}
