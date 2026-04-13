@@ -178,6 +178,20 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
         </div>
         <div className="flex items-center gap-4">
           <NotificationBell userId={profile.id} isMistress={isMistress} />
+          {/* Mobile-only: avatar → settings */}
+          <Link
+            href={isMistress ? "/mistress/settings" : "/sub/settings"}
+            className="lg:hidden w-8 h-8 rounded-full border border-primary/30 bg-surface-container flex items-center justify-center overflow-hidden active:scale-90 transition-transform flex-shrink-0"
+            aria-label="Settings"
+          >
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.display_name || "Profile"} className="w-full h-full object-cover" />
+            ) : isMistress ? (
+              <Crown size={14} className="text-primary" />
+            ) : (
+              <Heart size={14} className="text-pink" />
+            )}
+          </Link>
           {/* Mobile-only logout */}
           <button
             onClick={handleLogout}
