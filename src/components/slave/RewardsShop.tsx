@@ -36,7 +36,7 @@ export function RewardsShop({ profile, pair, rewards, redemptions }: Props) {
     setRedeeming(reward.id);
     const { error: redemptionError } = await supabase.from("redemptions").insert({
       reward_id: reward.id,
-      user_id: profile.id,
+      redeemed_by: profile.id,
       status: "pending",
     });
     if (!redemptionError) {

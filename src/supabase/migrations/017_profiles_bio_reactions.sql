@@ -55,6 +55,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE message_reactions;
 --       then run these policies. Bucket should be PUBLIC (for CDN delivery).
 
 -- Allow authenticated users to upload their own avatar
+DROP POLICY IF EXISTS "Users can upload own avatar" ON storage.objects;
 CREATE POLICY "Users can upload own avatar"
   ON storage.objects FOR INSERT
   TO authenticated
@@ -64,6 +65,7 @@ CREATE POLICY "Users can upload own avatar"
   );
 
 -- Allow authenticated users to update their own avatar
+DROP POLICY IF EXISTS "Users can update own avatar" ON storage.objects;
 CREATE POLICY "Users can update own avatar"
   ON storage.objects FOR UPDATE
   TO authenticated
@@ -73,12 +75,14 @@ CREATE POLICY "Users can update own avatar"
   );
 
 -- Public read access (avatars bucket is public)
+DROP POLICY IF EXISTS "Public avatar read access" ON storage.objects;
 CREATE POLICY "Public avatar read access"
   ON storage.objects FOR SELECT
   TO public
   USING (bucket_id = 'avatars');
 
 -- Users can delete their own avatar
+DROP POLICY IF EXISTS "Users can delete own avatar" ON storage.objects;
 CREATE POLICY "Users can delete own avatar"
   ON storage.objects FOR DELETE
   TO authenticated

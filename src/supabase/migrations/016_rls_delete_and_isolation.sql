@@ -28,7 +28,7 @@ CREATE POLICY "Pair can delete redemptions"
     reward_id IN (
       SELECT id FROM rewards WHERE user_in_pair(pair_id)
     )
-    OR auth.uid() = user_id
+    OR auth.uid() = redeemed_by
   );
 
 -- PUNISHMENTS — add delete
