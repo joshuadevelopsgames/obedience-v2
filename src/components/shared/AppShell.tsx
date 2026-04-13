@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Profile } from "@/types/database";
 import {
   Crown,
@@ -20,6 +20,8 @@ import {
   Terminal,
   User,
   Images,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -78,6 +80,20 @@ const slaveMobileNav = [
   { href: "/sub/journal", icon: BookOpen, label: "Journal" },
 ];
 
+// Items shown in the "More" drawer on mobile (everything not in the 4-tab bar, except Comms which has a FAB)
+const mistressMoreNav = [
+  { href: "/mistress/gallery",  icon: Images,           label: "Gallery"       },
+  { href: "/mistress/partner",  icon: User,             label: "Their Profile" },
+  { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences"  },
+];
+
+const slaveMoreNav = [
+  { href: "/sub/rituals",  icon: Shield,            label: "Chamber"       },
+  { href: "/sub/gallery",  icon: Images,            label: "Gallery"       },
+  { href: "/sub/partner",  icon: User,              label: "Their Profile" },
+  { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences"   },
+];
+
 export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -86,7 +102,9 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
   const isMistress = profile.role === "mistress";
   const nav = isMistress ? mistressNav : slaveNav;
   const mobileNav = isMistress ? mistressMobileNav : slaveMobileNav;
+  const moreNav = isMistress ? mistressMoreNav : slaveMoreNav;
   const unreadMessages = useUnreadNotifications(profile.id, "message");
+  const [showMore, setShowMore] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -192,14 +210,6 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
               <Heart size={14} className="text-pink" />
             )}
           </Link>
-          {/* Mobile-only logout */}
-          <button
-            onClick={handleLogout}
-            className="lg:hidden text-zinc-500 hover:text-zinc-300 transition-colors duration-300"
-            aria-label="Sign out"
-          >
-            <LogOut size={20} />
-          </button>
           <div className="hidden lg:flex items-center gap-3 pl-6 border-l border-white/10">
             <div className="text-right">
               <p className="text-xs font-bold font-headline tracking-wider">{tierLabel}</p>
@@ -304,7 +314,7 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
       </Link>
 
       {/* ── Mobile Bottom Tab Bar ──────────────────── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-end px-4 z-50 bottom-tab-bar"
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-end px-2 z-50 bottom-tab-bar"
         style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))", paddingTop: "0.5rem", height: "auto" }}>
         {mobileNav.map((item) => {
           const active = pathname === item.href;
@@ -312,21 +322,113 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-end py-2 transition-all active:scale-90 duration-200 ${
-                active
-                  ? "text-primary"
-                  : "text-zinc-600 hover:text-pink"
+              onClick={() => setShowMore(false)}
+              className={`flex flex-col items-center justify-end py-2 px-2 transition-all active:scale-90 duration-200 ${
+                active ? "text-primary" : "text-zinc-600 hover:text-pink"
               }`}
               style={active ? { filter: "drop-shadow(0 0 8px rgba(168,85,247,0.8))" } : {}}
             >
               <item.icon size={22} strokeWidth={active ? 2 : 1.5} />
-              <span className="text-[10px] uppercase tracking-widest mt-1 font-headline">
-                {item.label}
-              </span>
+              <span className="text-[10px] uppercase tracking-widest mt-1 font-headline">{item.label}</span>
             </Link>
           );
         })}
+
+        {/* More button */}
+        <button
+          onClick={() => setShowMore((v) => !v)}
+          className={`flex flex-col items-center justify-end py-2 px-2 transition-all active:scale-90 duration-200 ${
+            showMore ? "text-primary" : "text-zinc-600"
+          }`}
+          style={showMore ? { filter: "drop-shadow(0 0 8px rgba(168,85,247,0.8))" } : {}}
+        >
+          <MoreHorizontal size={22} strokeWidth={showMore ? 2 : 1.5} />
+          <span className="text-[10px] uppercase tracking-widest mt-1 font-headline">More</span>
+        </button>
       </nav>
+
+      {/* ── More Drawer (mobile) ───────────────────── */}
+      {showMore && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="lg:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowMore(false)}
+          />
+          {/* Sheet */}
+          <div
+            className="lg:hidden fixed left-0 right-0 z-[70] bg-surface-container border-t border-white/10 rounded-t-2xl shadow-2xl"
+            style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
+            <div className="px-4 pb-6 pt-2">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-headline font-bold tracking-widest uppercase text-zinc-500">More</span>
+                <button onClick={() => setShowMore(false)} className="p-1 text-zinc-500 hover:text-foreground">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {moreNav.map((item) => {
+                  const active = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setShowMore(false)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all active:scale-95 ${
+                        active
+                          ? "bg-primary/10 border-primary/30 text-primary"
+                          : "bg-surface-low border-outline-variant/10 text-zinc-400 hover:text-foreground hover:border-white/10"
+                      }`}
+                    >
+                      <item.icon size={22} strokeWidth={active ? 2 : 1.5} />
+                      <span className="text-[10px] font-headline font-bold uppercase tracking-widest text-center leading-tight">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+
+                {/* Messages shortcut */}
+                <Link
+                  href={isMistress ? "/mistress/messages" : "/sub/messages"}
+                  onClick={() => setShowMore(false)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all active:scale-95 ${
+                    pathname.endsWith("/messages")
+                      ? "bg-primary/10 border-primary/30 text-primary"
+                      : "bg-surface-low border-outline-variant/10 text-zinc-400 hover:text-foreground hover:border-white/10"
+                  }`}
+                >
+                  <div className="relative">
+                    <MessageCircle size={22} strokeWidth={1.5} />
+                    {unreadMessages > 0 && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-pink text-[8px] font-bold text-white flex items-center justify-center leading-none">
+                        {unreadMessages > 9 ? "9+" : unreadMessages}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-headline font-bold uppercase tracking-widest text-center">Comms</span>
+                </Link>
+
+                {/* Sign out */}
+                <button
+                  onClick={() => { setShowMore(false); handleLogout(); }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-outline-variant/10 bg-surface-low text-zinc-400 hover:text-[#ff3366] hover:border-[#ff3366]/20 transition-all active:scale-95"
+                >
+                  <LogOut size={22} strokeWidth={1.5} />
+                  <span className="text-[10px] font-headline font-bold uppercase tracking-widest">Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
