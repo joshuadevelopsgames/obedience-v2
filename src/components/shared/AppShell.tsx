@@ -18,6 +18,7 @@ import {
   Lock,
   HelpCircle,
   Terminal,
+  User,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -44,6 +45,7 @@ const mistressNav = [
   { href: "/mistress/rewards", icon: Gift, label: "Rewards" },
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
+  { href: "/mistress/partner", icon: User, label: "Their Profile" },
   { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
 
@@ -54,6 +56,7 @@ const slaveNav = [
   { href: "/sub/journal", icon: BookOpen, label: "Journal" },
   { href: "/sub/messages", icon: MessageCircle, label: "Comms" },
   { href: "/sub/rewards", icon: Gift, label: "Vault" },
+  { href: "/sub/partner", icon: User, label: "Their Profile" },
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
 

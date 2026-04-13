@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Crown, Heart, Zap, Shield, AlertTriangle, AlertOctagon, Sparkles } from "lucide-react";
+import { ArrowLeft, Crown, Heart, Zap, Shield, AlertTriangle, AlertOctagon, Sparkles, Frown, Meh, Smile, SmilePlus, Annoyed } from "lucide-react";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import type { Profile, Pair, Kink, MoodCheckin } from "@/types/database";
 
@@ -28,7 +28,22 @@ interface Props {
   backHref: string;
 }
 
-const moodEmoji: Record<number, string> = { 1: "😞", 2: "😕", 3: "😐", 4: "😊", 5: "😍" };
+// Mood 1–5 → icon + color
+const moodConfig: Record<number, { icon: React.ElementType; color: string; label: string }> = {
+  1: { icon: Frown,      color: "text-[#ff3366]",  label: "Struggling"  },
+  2: { icon: Annoyed,    color: "text-warning",     label: "Low"         },
+  3: { icon: Meh,        color: "text-zinc-400",    label: "Neutral"     },
+  4: { icon: Smile,      color: "text-success",     label: "Good"        },
+  5: { icon: SmilePlus,  color: "text-primary",     label: "Great"       },
+};
+
+const moodBarColor: Record<number, string> = {
+  1: "bg-[#ff3366]",
+  2: "bg-warning",
+  3: "bg-zinc-500",
+  4: "bg-success",
+  5: "bg-primary",
+};
 
 const kinkCategoryColors: Record<string, string> = {
   restraint: "border-primary/30 bg-primary/5 text-primary",
@@ -148,17 +163,41 @@ export function PartnerProfileView({
           )}
 
           {/* Mood */}
-          {avgMood && (
-            <div className="mt-4 flex items-center gap-2">
-              <span className="text-[10px] text-zinc-500 font-headline uppercase tracking-widest">Recent mood</span>
-              <span className="text-xl">{moodEmoji[avgMood]}</span>
-              <div className="flex gap-1">
-                {recentMood.slice(0, 7).map((m) => (
-                  <span key={m.id} className="text-sm">{m.emoji || moodEmoji[m.mood]}</span>
-                ))}
+          {avgMood && (() => {
+            const cfg = moodConfig[avgMood] ?? moodConfig[3];
+            const MoodIcon = cfg.icon;
+            return (
+              <div className="mt-4 bg-surface-container rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-[10px] text-zinc-500 font-headline uppercase tracking-widest">Recent mood</span>
+                  <div className={`flex items-center gap-1 ml-auto ${cfg.color}`}>
+                    <MoodIcon size={14} />
+                    <span className="text-[10px] font-headline font-bold uppercase tracking-widest">{cfg.label}</span>
+                  </div>
+                </div>
+                {/* 7-day bar chart */}
+                <div className="flex items-end gap-1 h-8">
+                  {recentMood.slice(0, 7).reverse().map((m) => {
+                    const barCfg = moodConfig[m.mood] ?? moodConfig[3];
+                    const BarIcon = barCfg.icon;
+                    const heightPct = `${(m.mood / 5) * 100}%`;
+                    return (
+                      <div key={m.id} className="flex-1 flex flex-col items-center justify-end gap-0.5 h-full" title={barCfg.label}>
+                        <div
+                          className={`w-full rounded-sm opacity-70 hover:opacity-100 transition-opacity ${moodBarColor[m.mood] ?? "bg-zinc-500"}`}
+                          style={{ height: heightPct }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-[9px] text-zinc-600 font-label">7 days ago</span>
+                  <span className="text-[9px] text-zinc-600 font-label">Today</span>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 
