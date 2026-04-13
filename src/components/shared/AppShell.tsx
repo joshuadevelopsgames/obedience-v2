@@ -22,6 +22,7 @@ import {
   Images,
   MoreHorizontal,
   X,
+  ShoppingBag,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -49,6 +50,7 @@ const mistressNav = [
   { href: "/mistress/journal", icon: BookOpen, label: "Journal" },
   { href: "/mistress/messages", icon: MessageCircle, label: "Comms" },
   { href: "/mistress/gallery", icon: Images, label: "Gallery" },
+  { href: "/mistress/wishlist", icon: ShoppingBag, label: "Wishlist" },
   { href: "/mistress/partner", icon: User, label: "Their Profile" },
   { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
@@ -61,6 +63,7 @@ const slaveNav = [
   { href: "/sub/messages", icon: MessageCircle, label: "Comms" },
   { href: "/sub/rewards", icon: Gift, label: "Vault" },
   { href: "/sub/gallery", icon: Images, label: "Gallery" },
+  { href: "/sub/wishlist", icon: ShoppingBag, label: "Wishlist" },
   { href: "/sub/partner", icon: User, label: "Their Profile" },
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences" },
 ];
@@ -82,14 +85,16 @@ const slaveMobileNav = [
 
 // Items shown in the "More" drawer on mobile (everything not in the 4-tab bar, except Comms which has a FAB)
 const mistressMoreNav = [
-  { href: "/mistress/gallery",  icon: Images,           label: "Gallery"       },
-  { href: "/mistress/partner",  icon: User,             label: "Their Profile" },
+  { href: "/mistress/gallery",  icon: Images,            label: "Gallery"       },
+  { href: "/mistress/wishlist", icon: ShoppingBag,       label: "Wishlist"      },
+  { href: "/mistress/partner",  icon: User,              label: "Their Profile" },
   { href: "/mistress/settings", icon: SlidersHorizontal, label: "Preferences"  },
 ];
 
 const slaveMoreNav = [
   { href: "/sub/rituals",  icon: Shield,            label: "Chamber"       },
   { href: "/sub/gallery",  icon: Images,            label: "Gallery"       },
+  { href: "/sub/wishlist", icon: ShoppingBag,       label: "Wishlist"      },
   { href: "/sub/partner",  icon: User,              label: "Their Profile" },
   { href: "/sub/settings", icon: SlidersHorizontal, label: "Preferences"   },
 ];
