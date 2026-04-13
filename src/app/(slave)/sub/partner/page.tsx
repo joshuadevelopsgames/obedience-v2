@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PartnerProfileView } from "@/components/shared/PartnerProfileView";
+import { pickActivePair } from "@/lib/activePair";
 
 export default async function PartnerPage() {
   const supabase = await createClient();
@@ -17,15 +18,15 @@ export default async function PartnerPage() {
 
   if (!profile || profile.role !== "slave") redirect("/dashboard");
 
-  // Get active pair
-  const { data: pair } = await supabase
+  // Get ALL active pairs then pick the one selected in the switcher
+  const { data: allPairs } = await supabase
     .from("pairs")
     .select("*")
     .eq("slave_id", user.id)
     .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
+
+  const pair = await pickActivePair(allPairs || []);
 
   if (!pair) redirect("/sub");
 
