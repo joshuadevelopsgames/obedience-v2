@@ -184,13 +184,18 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
             <div className="text-right">
               <p className="text-xs font-bold font-headline tracking-wider">{tierLabel}</p>
             </div>
-            <div className="w-10 h-10 rounded-full border-2 border-primary/30 bg-surface-container flex items-center justify-center overflow-hidden">
-              {isMistress ? (
+            <Link
+              href={isMistress ? "/mistress/settings" : "/sub/settings"}
+              className="w-10 h-10 rounded-full border-2 border-primary/30 bg-surface-container flex items-center justify-center overflow-hidden hover:border-primary/60 transition-colors"
+            >
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt={profile.display_name || "Profile"} className="w-full h-full object-cover" />
+              ) : isMistress ? (
                 <Crown size={18} className="text-primary" />
               ) : (
                 <Heart size={18} className="text-pink" />
               )}
-            </div>
+            </Link>
           </div>
         </div>
       </header>
@@ -200,19 +205,21 @@ export function AppShell({ children, profile, pairSwitcher }: AppShellProps) {
         <aside className="hidden lg:flex h-[calc(100vh-5rem)] w-72 flex-col bg-surface-lowest border-r border-white/5 py-8 gap-8 font-headline sticky top-20">
           {/* Operative/Commander Badge */}
           <div className="px-8 mb-4">
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
-              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
-                {isMistress ? (
+            <Link href={isMistress ? "/mistress/settings" : "/sub/settings"} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/8 transition-colors group">
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt={profile.display_name || "Profile"} className="w-full h-full object-cover rounded-lg" />
+                ) : isMistress ? (
                   <Crown size={20} className="text-primary" />
                 ) : (
                   <Shield size={20} className="text-primary" />
                 )}
               </div>
-              <div>
-                <p className="uppercase tracking-widest text-xs font-bold">{tierLabel}</p>
+              <div className="min-w-0">
+                <p className="uppercase tracking-widest text-xs font-bold truncate">{profile.display_name || profile.collar_name || tierLabel}</p>
                 <p className="text-[10px] text-zinc-500">{tierRank}</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Nav Links */}

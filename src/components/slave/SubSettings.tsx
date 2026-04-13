@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { KinkLibrary } from "@/components/shared/KinkLibrary";
 import LimitsLibrary from "@/components/shared/LimitsLibrary";
+import { AvatarUploader } from "@/components/shared/AvatarUploader";
 import type { Profile, Pair, Contract, MoodCheckin, Kink } from "@/types/database";
 
 interface Limit {
@@ -64,6 +65,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function SubSettings({ profile, pair, contract, recentMood, allKinks, selectedKinkIds, allLimits, selectedLimits, pairId }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [collarName, setCollarName] = useState(profile.collar_name || "");
+  const [bio, setBio] = useState(profile.bio || "");
   const [saving, setSaving] = useState(false);
   const [safeWordState, setSafeWordState] = useState<"yellow" | "red" | null>(null);
   const [showLimitsForm, setShowLimitsForm] = useState(false);
@@ -102,6 +104,7 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
     const { error } = await supabase.from("profiles").update({
       display_name: displayName.trim() || null,
       collar_name: collarName.trim() || null,
+      bio: bio.trim() || null,
     }).eq("id", profile.id);
     if (!error) { toast.success("Profile updated"); router.refresh(); }
     else { toast.error("Failed to update profile"); }
@@ -184,26 +187,48 @@ export function SubSettings({ profile, pair, contract, recentMood, allKinks, sel
       {/* Profile */}
       <SectionCard>
         <SectionHeading icon={<SlidersHorizontal size={14} />}>Profile</SectionHeading>
+        <div className="flex gap-6 items-start mb-6">
+          <AvatarUploader
+            userId={profile.id}
+            currentAvatarUrl={profile.avatar_url}
+            displayName={profile.display_name || profile.collar_name}
+            size="lg"
+          />
+          <div className="flex-1 space-y-4">
+            <div>
+              <SectionLabel>Display Name</SectionLabel>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your public name"
+                className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div>
+              <SectionLabel>Collar Name</SectionLabel>
+              <input
+                type="text"
+                value={collarName}
+                onChange={(e) => setCollarName(e.target.value)}
+                placeholder="What does your Mistress call you?"
+                className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+          </div>
+        </div>
         <div className="space-y-5">
           <div>
-            <SectionLabel>Display Name</SectionLabel>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your public name"
-              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
+            <SectionLabel>About You</SectionLabel>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="A short description visible to your Mistress…"
+              rows={3}
+              maxLength={300}
+              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors resize-none"
             />
-          </div>
-          <div>
-            <SectionLabel>Collar Name</SectionLabel>
-            <input
-              type="text"
-              value={collarName}
-              onChange={(e) => setCollarName(e.target.value)}
-              placeholder="What does your Mistress call you?"
-              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors"
-            />
+            <p className="text-[10px] text-zinc-600 mt-1">{bio.length}/300</p>
           </div>
           <button
             onClick={handleSaveProfile}

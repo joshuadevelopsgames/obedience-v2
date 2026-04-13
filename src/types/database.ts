@@ -23,6 +23,7 @@ export interface Profile {
   display_name: string | null
   collar_name: string | null
   title: string | null
+  bio: string | null
   avatar_url: string | null
   banner_url: string | null
   tone_preference: TonePreference
@@ -36,6 +37,15 @@ export interface Profile {
   onboarded: boolean
   created_at: string
   updated_at: string
+}
+
+export interface MessageReaction {
+  id: string
+  message_id: string
+  pair_id: string
+  user_id: string
+  emoji: string
+  created_at: string
 }
 
 export interface Pair {

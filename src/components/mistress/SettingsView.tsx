@@ -20,6 +20,7 @@ import { KinkLibrary } from "@/components/shared/KinkLibrary";
 import LimitsLibrary from "@/components/shared/LimitsLibrary";
 import { ContractModal } from "@/components/mistress/ContractModal";
 import { RewardsManager } from "@/components/mistress/RewardsManager";
+import { AvatarUploader } from "@/components/shared/AvatarUploader";
 import type { Profile, Pair, Contract, TonePreference, AutopilotMode, Kink, Reward } from "@/types/database";
 
 interface Limit {
@@ -67,6 +68,7 @@ export function SettingsView({
 }: Props) {
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [title, setTitle] = useState(profile.title || "");
+  const [bio, setBio] = useState(profile.bio || "");
   const [tonePreference, setTonePreference] = useState<TonePreference>(profile.tone_preference);
   const [autopilot, setAutopilot] = useState(profile.autopilot);
   const [autopilotMode, setAutopilotMode] = useState<AutopilotMode>(profile.autopilot_mode);
@@ -88,6 +90,7 @@ export function SettingsView({
       const { error } = await supabase.from("profiles").update({
         display_name: displayName.trim(),
         title: title.trim() || null,
+        bio: bio.trim() || null,
         tone_preference: tonePreference,
         autopilot,
         autopilot_mode: autopilotMode,
@@ -174,14 +177,36 @@ export function SettingsView({
           <SlidersHorizontal size={16} className="text-primary" />
           <h2 className="text-sm font-headline font-bold tracking-widest uppercase">Profile</h2>
         </div>
+        <div className="flex gap-6 items-start mb-6">
+          <AvatarUploader
+            userId={userId}
+            currentAvatarUrl={profile.avatar_url}
+            displayName={profile.display_name}
+            size="lg"
+          />
+          <div className="flex-1 space-y-4">
+            <div>
+              <SectionLabel>Display Name</SectionLabel>
+              <UnderlineInput value={displayName} onChange={setDisplayName} placeholder="Your commander name" />
+            </div>
+            <div>
+              <SectionLabel>Title / Honorific</SectionLabel>
+              <UnderlineInput value={title} onChange={setTitle} placeholder="Mistress, Goddess, Dominatrix…" />
+            </div>
+          </div>
+        </div>
         <div className="space-y-5">
           <div>
-            <SectionLabel>Display Name</SectionLabel>
-            <UnderlineInput value={displayName} onChange={setDisplayName} placeholder="Your commander name" />
-          </div>
-          <div>
-            <SectionLabel>Title / Honorific</SectionLabel>
-            <UnderlineInput value={title} onChange={setTitle} placeholder="Mistress, Goddess, Dominatrix…" />
+            <SectionLabel>About You</SectionLabel>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="A short description visible to your submissive…"
+              rows={3}
+              maxLength={300}
+              className="w-full bg-transparent border-b border-outline-variant/30 px-0 py-2 text-sm text-foreground placeholder-zinc-600 focus:outline-none focus:border-primary transition-colors resize-none"
+            />
+            <p className="text-[10px] text-zinc-600 mt-1">{bio.length}/300</p>
           </div>
           <button
             onClick={handleSaveProfile}
